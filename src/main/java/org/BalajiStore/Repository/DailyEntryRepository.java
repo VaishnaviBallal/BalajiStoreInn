@@ -15,14 +15,31 @@ public interface DailyEntryRepository extends JpaRepository<DailyEntry, Long> {
     @Query("""
 SELECT new org.BalajiStore.Dto.ItemReportDto(
     p.name,
-    COALESCE(SUM(CASE WHEN e.type='purchase' THEN e.quantity END),0),
-    COALESCE(SUM(CASE WHEN e.type='usage' THEN e.quantity END),0),
+
+    (p.quantity
+      - COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' 
+      AND e.entryTime BETWEEN :start AND :end 
+      THEN e.quantity ELSE 0 END),0)
+      + COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' 
+      AND e.entryTime BETWEEN :start AND :end 
+      THEN e.quantity ELSE 0 END),0)
+    ),
+
+    COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' 
+      AND e.entryTime BETWEEN :start AND :end 
+      THEN e.quantity ELSE 0 END),0),
+
+    COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' 
+      AND e.entryTime BETWEEN :start AND :end 
+      THEN e.quantity ELSE 0 END),0),
+
     p.quantity
 )
+
 FROM Product p
 LEFT JOIN DailyEntry e
-ON p.name = e.itemName
-AND e.entryTime BETWEEN :start AND :end
+ON LOWER(p.name) = LOWER(e.itemName)
+
 GROUP BY p.name, p.quantity
 """)
     List<ItemReportDto> getItemReport(
