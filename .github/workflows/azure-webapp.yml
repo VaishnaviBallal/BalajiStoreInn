@@ -3,7 +3,7 @@ name: Build and deploy Spring Boot app to Azure Web App
 on:
   push:
     branches:
-      - Developmen-Vaish
+      - purchaseEntry
 
 jobs:
   build-and-deploy:
