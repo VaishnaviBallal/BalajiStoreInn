@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - purchaseEntry
+       - master
 
 jobs:
   build-and-deploy:
