@@ -1,25 +1,14 @@
-# Use a Maven + JDK image
-FROM maven:3.9.2-eclipse-temurin-17 AS build
+# Use official Java 17 image
+FROM eclipse-temurin:17-jdk-alpine
 
-# Set workdir
+# Set working directory
 WORKDIR /app
 
-# Copy pom and source code
-COPY pom.xml .
-COPY src ./src
-
-# Build the jar
-RUN mvn clean package -DskipTests
-
-# Run stage
-FROM eclipse-temurin:17-jre
-WORKDIR /app
-
-# Copy jar from build stage
-COPY --from=build /app/target/*.jar app.jar
+# Copy the Maven build artifact (jar) into the container
+COPY target/balaji_store-1.0-SNAPSHOT.jar app.jar
 
 # Expose port
 EXPOSE 8080
 
-# Start app
-CMD ["java", "-jar", "app.jar"]
+# Run the jar
+ENTRYPOINT ["java","-jar","app.jar"]
