@@ -7,6 +7,9 @@ public class ItemReportDto {
     private long purchased;
     private long used;
     private long closingStock;
+    private double purchaseAmount;
+    private double usageAmount;
+    private double stockValue;
 
     public ItemReportDto() {
     }
@@ -15,12 +18,19 @@ public class ItemReportDto {
                          long openingStock,
                          long purchased,
                          long used,
-                         long closingStock) {
+                         long closingStock,
+                         double purchaseAmount,
+                         double usageAmount,
+                         double stockValue) {
+
         this.itemName = itemName;
         this.openingStock = openingStock;
         this.purchased = purchased;
         this.used = used;
         this.closingStock = closingStock;
+        this.purchaseAmount = purchaseAmount;
+        this.usageAmount = usageAmount;
+        this.stockValue = stockValue;
     }
 
     public String getItemName() {
@@ -41,6 +51,18 @@ public class ItemReportDto {
 
     public long getClosingStock() {
         return closingStock;
+    }
+
+    public double getPurchaseAmount() {
+        return purchaseAmount;
+    }
+
+    public double getUsageAmount() {
+        return usageAmount;
+    }
+
+    public double getStockValue() {
+        return stockValue;
     }
 
     public void setItemName(String itemName) {

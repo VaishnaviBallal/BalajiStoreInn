@@ -21,6 +21,9 @@ public class DailyEntry {
     @Column(name = "type")
     private String type;
 
+    @Column(name = "price")
+    private Double price; // price per unit at that time
+
     @Column(name = "entry_time")
     @JsonFormat(pattern = "dd-MM-yyyy hh:mm a")  // 12-hour format with AM/PM
     private LocalDateTime entryTime;
@@ -33,10 +36,12 @@ public class DailyEntry {
     public int getQuantity() { return quantity; }
     public String getType() { return type; }
     public LocalDateTime getEntryTime() { return entryTime; }
+    public Double getPrice(){return price;}
 
     public void setId(Long id) { this.id = id; }
     public void setItemName(String itemName) { this.itemName = itemName; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
     public void setType(String type) { this.type = type; }
     public void setEntryTime(LocalDateTime entryTime) { this.entryTime = entryTime; }
+    public void setPrice(double price){this.price=price;}
 }

@@ -14,7 +14,7 @@ public class Product {
 
     private int quantity;
 
-    private double price;
+    private Double price;
 
     public Product() {
     }
@@ -38,7 +38,7 @@ public class Product {
         return quantity;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
     public  String getUnit(){

@@ -25,7 +25,7 @@ public class DailyEntryService {
         System.out.println("Item Name : " + entry.getItemName());
         System.out.println("Type : " + entry.getType());
         System.out.println("Quantity : " + entry.getQuantity());
-
+        System.out.println("Price : " + entry.getPrice());
         // set entry time automatically
         entry.setEntryTime(LocalDateTime.now());
 
@@ -38,15 +38,17 @@ public class DailyEntryService {
 
         int currentQty = product.getQuantity();
 
-        // purchase case
+        // ✅ PURCHASE
         if (entry.getType().equalsIgnoreCase("purchase")) {
 
             int updatedQty = currentQty + entry.getQuantity();
             product.setQuantity(updatedQty);
 
+            // ✅ update product price (latest purchase price)
+            product.setPrice(entry.getPrice());
         }
 
-        // usage case
+        // ✅ USAGE
         else if (entry.getType().equalsIgnoreCase("usage")) {
 
             if (currentQty < entry.getQuantity()) {
@@ -55,12 +57,13 @@ public class DailyEntryService {
 
             int updatedQty = currentQty - entry.getQuantity();
             product.setQuantity(updatedQty);
+
+            // ✅ use existing product price
+            entry.setPrice(product.getPrice());
         }
 
-        // save updated product stock
         productRepository.save(product);
 
-        // save daily entry
         return entryRepository.save(entry);
     }
 
