@@ -27,13 +27,13 @@ SELECT new org.BalajiStore.Dto.ItemReportDto(
 
     p.quantity,
 
-    COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase'
-        THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0),
-
-    COALESCE(SUM(CASE WHEN LOWER(e.type)='usage'
-        THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0),
-
-    (p.quantity * COALESCE(p.price,0))
+   (
+                                        COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase'
+                                            THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0)
+                                        /
+                                        NULLIF(COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase'
+                                            THEN e.quantity ELSE 0 END),0),0)
+                                      ) * p.quantity
 )
 
 FROM Product p
