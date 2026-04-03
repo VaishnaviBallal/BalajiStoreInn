@@ -27,27 +27,25 @@ SELECT new org.BalajiStore.Dto.ItemReportDto(
 
     p.quantity,
 
-   (
-                                       COALESCE(
-                                                    (
-                                                      COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase'
-                                                          THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0)
-                                                      /
-                                                      NULLIF(
-                                                        COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase'
-                                                          THEN e.quantity ELSE 0 END),0),
-                                                        0
-                                                      )
-                                                    ) * p.quantity
-                                                    , 0)
+    COALESCE(
+      CASE 
+        WHEN COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0 END),0) = 0
+        THEN 0
+        ELSE (
+          COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase'
+              THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0)
+          /
+          COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase'
+              THEN e.quantity ELSE 0 END),0)
+        ) * p.quantity
+      END
+    , 0)
 
-
+)
 FROM Product p
-
 LEFT JOIN DailyEntry e
 ON LOWER(TRIM(p.name)) = LOWER(TRIM(e.itemName))
 AND e.entryTime BETWEEN :start AND :end   
-
 GROUP BY p.name, p.quantity, p.price
 """)
     List<ItemReportDto> getItemReport(
