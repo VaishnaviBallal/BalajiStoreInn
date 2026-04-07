@@ -12,14 +12,14 @@ public class Product {
     private String unit;
     private String name;
 
-    private int quantity;
+    private Double quantity;
 
     private Double price;
 
     public Product() {
     }
 
-    public Product(String name, int quantity, double price,String unit) {
+    public Product(String name, Double quantity, double price,String unit) {
         this.name = name;
         this.quantity = quantity;
         this.price = price;
@@ -34,7 +34,7 @@ public class Product {
         return name;
     }
 
-    public int getQuantity() {
+    public Double getQuantity() {
         return quantity;
     }
 
@@ -53,7 +53,7 @@ public class Product {
         this.name = name;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(Double quantity) {
         this.quantity = quantity;
     }
 

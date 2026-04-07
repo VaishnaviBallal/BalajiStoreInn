@@ -31,7 +31,7 @@ public class DailyEntryService {
             throw new RuntimeException("Product not found: " + entry.getItemName());
         }
 
-        int currentQty = product.getQuantity();
+        Double currentQty = product.getQuantity();
 
         if (entry.getType().equalsIgnoreCase("purchase")) {
             product.setQuantity(currentQty + entry.getQuantity());
@@ -74,5 +74,23 @@ public class DailyEntryService {
 
     public List<DailyEntry> getAll() {
         return entryRepository.findAll();
+    }
+
+    public DailyEntry updateEntry(Long id, DailyEntry entry) {
+
+        DailyEntry existing = entryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Entry not found"));
+
+        // update fields
+        existing.setItemName(entry.getItemName());
+        existing.setType(entry.getType());
+        existing.setQuantity(entry.getQuantity());
+        existing.setPrice(entry.getPrice());
+
+        if (entry.getEntryTime() != null) {
+            existing.setEntryTime(entry.getEntryTime());
+        }
+
+        return entryRepository.save(existing);
     }
 }

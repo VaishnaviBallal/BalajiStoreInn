@@ -40,4 +40,10 @@ public class DailyEntryController {
     public List<DailyEntry> getAllEntries() {
         return dailyEntryService.getAll();
     }
+
+    @PutMapping("/{id}")
+    public DailyEntry updateEntry(@PathVariable Long id,
+                                  @RequestBody DailyEntry entry) {
+        return dailyEntryService.updateEntry(id, entry);
+    }
 }

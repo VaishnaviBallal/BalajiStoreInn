@@ -17,7 +17,7 @@ public class DailyEntry {
     private String itemName;
 
     @Column(name = "quantity")
-    private int quantity;
+    private Double quantity;
 
     @Column(name = "type")
     private String type;
@@ -35,14 +35,14 @@ public class DailyEntry {
     // Getters and setters
     public Long getId() { return id; }
     public String getItemName() { return itemName; }
-    public int getQuantity() { return quantity; }
+    public Double getQuantity() { return quantity; }
     public String getType() { return type; }
     public LocalDate getEntryTime() { return entryTime; }
     public Double getPrice(){return price;}
 
     public void setId(Long id) { this.id = id; }
     public void setItemName(String itemName) { this.itemName = itemName; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
+    public void setQuantity(Double quantity) { this.quantity = quantity; }
     public void setType(String type) { this.type = type; }
     public void setEntryTime(LocalDate entryTime) { this.entryTime = entryTime; }
     public void setPrice(double price){this.price=price;}
