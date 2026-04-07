@@ -3,10 +3,10 @@ package org.BalajiStore.Dto;
 public class ItemReportDto {
 
     private String itemName;
-    private long openingStock;
-    private long purchased;
-    private long used;
-    private long closingStock;
+    private Double openingStock;
+    private Double purchased;
+    private Double used;
+    private Double closingStock;
     private double purchaseAmount;
     private double usageAmount;
     private double stockValue;
@@ -15,13 +15,13 @@ public class ItemReportDto {
     }
 
     public ItemReportDto(String itemName,
-                         long openingStock,
-                         long purchased,
-                         long used,
-                         long closingStock,
-                         double purchaseAmount,
-                         double usageAmount,
-                         double stockValue) {
+                         Double openingStock,
+                         Double purchased,
+                         Double used,
+                         Double closingStock,
+                         Double purchaseAmount,
+                         Double usageAmount,
+                         Double stockValue) {
 
         this.itemName = itemName;
         this.openingStock = openingStock;
@@ -37,19 +37,19 @@ public class ItemReportDto {
         return itemName;
     }
 
-    public long getOpeningStock() {
+    public Double getOpeningStock() {
         return openingStock;
     }
 
-    public long getPurchased() {
+    public Double getPurchased() {
         return purchased;
     }
 
-    public long getUsed() {
+    public Double getUsed() {
         return used;
     }
 
-    public long getClosingStock() {
+    public Double getClosingStock() {
         return closingStock;
     }
 
@@ -69,19 +69,19 @@ public class ItemReportDto {
         this.itemName = itemName;
     }
 
-    public void setOpeningStock(long openingStock) {
+    public void setOpeningStock(Double openingStock) {
         this.openingStock = openingStock;
     }
 
-    public void setPurchased(long purchased) {
+    public void setPurchased(Double purchased) {
         this.purchased = purchased;
     }
 
-    public void setUsed(long used) {
+    public void setUsed(Double used) {
         this.used = used;
     }
 
-    public void setClosingStock(long closingStock) {
+    public void setClosingStock(Double closingStock) {
         this.closingStock = closingStock;
     }
 }
