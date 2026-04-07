@@ -31,4 +31,5 @@ public class DailyEntryController {
     public void deleteEntry(@PathVariable Long id) {
         dailyEntryService.deleteEntry(id);
     }
+
 }

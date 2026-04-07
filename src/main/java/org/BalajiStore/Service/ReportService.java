@@ -19,11 +19,8 @@ public class ReportService {
 
     public List<ItemReportDto> getReport(String start, String end) {
 
-        LocalDateTime startDate =
-                LocalDate.parse(start).atStartOfDay();
-
-        LocalDateTime endDate =
-                LocalDate.parse(end).atTime(23,59,59);
+        LocalDate startDate = LocalDate.parse(start);
+        LocalDate endDate = LocalDate.parse(end);
 
         return repository.getItemReport(startDate, endDate);
     }

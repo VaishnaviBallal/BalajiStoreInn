@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface DailyEntryRepository extends JpaRepository<DailyEntry, Long> {
@@ -45,9 +45,9 @@ AND e.entryTime BETWEEN :start AND :end
 GROUP BY p.name, p.quantity, p.price
 """)
     List<ItemReportDto> getItemReport(
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
     );
 
-    List<DailyEntry> findByEntryTimeBetween(LocalDateTime start, LocalDateTime end);
+    List<DailyEntry> findByEntryTime(LocalDate date);
 }

@@ -1,7 +1,8 @@
 package org.BalajiStore.Model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+
+import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
@@ -25,8 +26,9 @@ public class DailyEntry {
     private Double price; // price per unit at that time
 
     @Column(name = "entry_time")
-    @JsonFormat(pattern = "dd-MM-yyyy hh:mm a")  // 12-hour format with AM/PM
-    private LocalDateTime entryTime;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate entryTime;
+
 
     public DailyEntry() {}
 
@@ -35,13 +37,13 @@ public class DailyEntry {
     public String getItemName() { return itemName; }
     public int getQuantity() { return quantity; }
     public String getType() { return type; }
-    public LocalDateTime getEntryTime() { return entryTime; }
+    public LocalDate getEntryTime() { return entryTime; }
     public Double getPrice(){return price;}
 
     public void setId(Long id) { this.id = id; }
     public void setItemName(String itemName) { this.itemName = itemName; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
     public void setType(String type) { this.type = type; }
-    public void setEntryTime(LocalDateTime entryTime) { this.entryTime = entryTime; }
+    public void setEntryTime(LocalDate entryTime) { this.entryTime = entryTime; }
     public void setPrice(double price){this.price=price;}
 }

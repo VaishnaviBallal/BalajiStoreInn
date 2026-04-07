@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -22,14 +21,10 @@ public class DailyEntryService {
 
     public DailyEntry saveEntry(DailyEntry entry) {
 
-        System.out.println("Item Name : " + entry.getItemName());
-        System.out.println("Type : " + entry.getType());
-        System.out.println("Quantity : " + entry.getQuantity());
-        System.out.println("Price : " + entry.getPrice());
-        // set entry time automatically
-        entry.setEntryTime(LocalDateTime.now());
+        if (entry.getEntryTime() == null) {
+            entry.setEntryTime(LocalDate.now());
+        }
 
-        // find product
         Product product = productRepository.findByNameIgnoreCase(entry.getItemName());
 
         if (product == null) {
@@ -38,27 +33,17 @@ public class DailyEntryService {
 
         int currentQty = product.getQuantity();
 
-        // ✅ PURCHASE
         if (entry.getType().equalsIgnoreCase("purchase")) {
-
-            int updatedQty = currentQty + entry.getQuantity();
-            product.setQuantity(updatedQty);
-
-            // ✅ update product price (latest purchase price)
+            product.setQuantity(currentQty + entry.getQuantity());
             product.setPrice(entry.getPrice());
         }
-
-        // ✅ USAGE
         else if (entry.getType().equalsIgnoreCase("usage")) {
 
             if (currentQty < entry.getQuantity()) {
                 throw new RuntimeException("Not enough stock available");
             }
 
-            int updatedQty = currentQty - entry.getQuantity();
-            product.setQuantity(updatedQty);
-
-            // ✅ use existing product price
+            product.setQuantity(currentQty - entry.getQuantity());
             entry.setPrice(product.getPrice());
         }
 
@@ -68,13 +53,7 @@ public class DailyEntryService {
     }
 
     public List<DailyEntry> getAllEntries() {
-
-        LocalDate today = LocalDate.now();
-
-        LocalDateTime start = today.atStartOfDay();
-        LocalDateTime end = today.plusDays(1).atStartOfDay();
-
-        return entryRepository.findByEntryTimeBetween(start, end);
+        return entryRepository.findByEntryTime(LocalDate.now());
     }
     public void deleteEntry(Long id) {
 
