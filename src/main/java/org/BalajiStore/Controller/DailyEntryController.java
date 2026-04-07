@@ -32,4 +32,12 @@ public class DailyEntryController {
         dailyEntryService.deleteEntry(id);
     }
 
+    @GetMapping("/by-date")
+    public List<DailyEntry> getEntriesByDate(@RequestParam String date) {
+        return dailyEntryService.getEntriesByDate(date);
+    }
+    @GetMapping("/all")
+    public List<DailyEntry> getAllEntries() {
+        return dailyEntryService.getAll();
+    }
 }

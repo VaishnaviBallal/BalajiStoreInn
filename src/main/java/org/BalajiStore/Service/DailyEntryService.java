@@ -67,4 +67,12 @@ public class DailyEntryService {
 
         }
     }
+    public List<DailyEntry> getEntriesByDate(String date) {
+        LocalDate selectedDate = LocalDate.parse(date);
+        return entryRepository.findByEntryTime(selectedDate);
+    }
+
+    public List<DailyEntry> getAll() {
+        return entryRepository.findAll();
+    }
 }
