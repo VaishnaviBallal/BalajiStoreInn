@@ -25,6 +25,15 @@ public class ReportService {
         return repository.getItemReport(startDate, endDate);
     }
     public ItemReportDto getItemByName(String name) {
-        return repository.getItemByName(name);
+
+        List<ItemReportDto> list = repository.getItemByName(name);
+
+        if (list.isEmpty()) {
+            throw new RuntimeException("Item not found");
+        }
+
+        return list.stream().findFirst()
+                .orElseThrow(() -> new RuntimeException("Item not found"));
+
     }
 }

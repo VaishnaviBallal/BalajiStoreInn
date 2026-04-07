@@ -92,7 +92,7 @@ public interface DailyEntryRepository extends JpaRepository<DailyEntry, Long> {
 
     GROUP BY p.name, p.quantity, p.price
     """)
-    ItemReportDto getItemByName(@Param("name") String name);
+    List<ItemReportDto> getItemByName(@Param("name") String name);
 
 
     // ✅ optional (keep)
