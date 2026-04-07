@@ -9,11 +9,10 @@ public class ItemReportDto {
     private Double purchased;
     private Double used;
     private Double closingStock;
-    private double purchaseAmount;
-    private double usageAmount;
-    private double stockValue;
-    private String dateRange;
-    private LocalDate date;
+    private Double purchaseAmount;
+    private Double usageAmount;
+    private Double stockValue;
+    private LocalDate date; // ✅ important
 
     public ItemReportDto() {
     }
@@ -26,55 +25,28 @@ public class ItemReportDto {
                          Double purchaseAmount,
                          Double usageAmount,
                          Double stockValue,
-                         LocalDate date
-    ) {
-                         String dateRange;
+                         LocalDate date) {
 
         this.itemName = itemName;
         this.openingStock = openingStock;
         this.purchased = purchased;
         this.used = used;
-        this.date = date;
         this.closingStock = closingStock;
         this.purchaseAmount = purchaseAmount;
         this.usageAmount = usageAmount;
         this.stockValue = stockValue;
+        this.date = date;
     }
 
-    public String getItemName() {
-        return itemName;
-    }
-
-    public Double getOpeningStock() {
-        return openingStock;
-    }
-
-    public Double getPurchased() {
-        return purchased;
-    }
-
-    public Double getUsed() {
-        return used;
-    }
-
-    public Double getClosingStock() {
-        return closingStock;
-    }
-
-    public double getPurchaseAmount() {
-        return purchaseAmount;
-    }
-
-    public double getUsageAmount() {
-        return usageAmount;
-    }
-
-    public double getStockValue() {
-        return stockValue;
-    }
-
-    public String getDateRange() {
-        return dateRange;
+    public LocalDate getDate() { return date; }
+    public String getItemName() { return itemName; }
+    public Double getOpeningStock() { return openingStock; }
+    public Double getPurchased() { return purchased; }
+    public Double getUsed() { return used; }
+    public Double getClosingStock() { return closingStock; }
+    public Double getPurchaseAmount() { return purchaseAmount; }
+    public Double getUsageAmount() { return usageAmount; }
+    public Double getStockValue() { return stockValue;
     }
 
 
@@ -99,7 +71,5 @@ public class ItemReportDto {
         this.closingStock = closingStock;
     }
 
-    public void setDateRange(String dateRange) {
-        this.dateRange = dateRange;
-    }
+
 }
