@@ -10,6 +10,7 @@ public class ItemReportDto {
     private double purchaseAmount;
     private double usageAmount;
     private double stockValue;
+    private String dateRange;
 
     public ItemReportDto() {
     }
@@ -22,7 +23,7 @@ public class ItemReportDto {
                          Double purchaseAmount,
                          Double usageAmount,
                          Double stockValue) {
-
+                         String dateRange;
         this.itemName = itemName;
         this.openingStock = openingStock;
         this.purchased = purchased;
@@ -65,6 +66,12 @@ public class ItemReportDto {
         return stockValue;
     }
 
+    public String getDateRange() {
+        return dateRange;
+    }
+
+
+
     public void setItemName(String itemName) {
         this.itemName = itemName;
     }
@@ -83,5 +90,9 @@ public class ItemReportDto {
 
     public void setClosingStock(Double closingStock) {
         this.closingStock = closingStock;
+    }
+
+    public void setDateRange(String dateRange) {
+        this.dateRange = dateRange;
     }
 }

@@ -37,10 +37,10 @@ SELECT new org.BalajiStore.Dto.ItemReportDto(
 )
 
 FROM Product p
-
 LEFT JOIN DailyEntry e
 ON LOWER(TRIM(p.name)) = LOWER(TRIM(e.itemName))
-AND e.entryTime BETWEEN :start AND :end   
+
+WHERE (e.entryTime BETWEEN :start AND :end OR e.entryTime IS NULL)
 
 GROUP BY p.name, p.quantity, p.price
 """)
