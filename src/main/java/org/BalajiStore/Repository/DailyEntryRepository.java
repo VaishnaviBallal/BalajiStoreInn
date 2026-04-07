@@ -2,6 +2,7 @@ package org.BalajiStore.Repository;
 
 import org.BalajiStore.Dto.ItemReportDto;
 import org.BalajiStore.Model.DailyEntry;
+import org.BalajiStore.Entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,48 +12,89 @@ import java.util.List;
 
 public interface DailyEntryRepository extends JpaRepository<DailyEntry, Long> {
 
+    // ✅ 1. DATE RANGE REPORT (for Reports page)
     @Query("""
-SELECT new org.BalajiStore.Dto.ItemReportDto(
+    SELECT new org.BalajiStore.Dto.ItemReportDto(
 
-    p.name,
+        p.name,
 
-    (p.quantity
-      - COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0 END),0)
-      + COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0 END),0)
-    ),
+        (p.quantity
+          - COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0 END),0)
+          + COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0 END),0)
+        ),
 
-    COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0 END),0),
+        COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0 END),0),
 
-    COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0 END),0),
+        COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0 END),0),
 
-    p.quantity,
+        p.quantity,
 
-    COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase'
-        THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0),
+        COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase'
+            THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0),
 
-    COALESCE(SUM(CASE WHEN LOWER(e.type)='usage'
-        THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0),
+        COALESCE(SUM(CASE WHEN LOWER(e.type)='usage'
+            THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0),
 
-    (p.quantity * COALESCE(p.price,0)),
+        (p.quantity * COALESCE(p.price,0)),
 
-    e.entryTime   
-)
+        e.entryTime   
+    )
 
-FROM Product p
-JOIN DailyEntry e
-ON LOWER(TRIM(p.name)) = LOWER(TRIM(e.itemName))
+    FROM Product p
+    JOIN DailyEntry e
+    ON LOWER(TRIM(p.name)) = LOWER(TRIM(e.itemName))
 
-WHERE e.entryTime BETWEEN :start AND :end
+    WHERE e.entryTime BETWEEN :start AND :end
 
-GROUP BY p.name, p.quantity, p.price, e.entryTime  
+    GROUP BY p.name, p.quantity, p.price, e.entryTime  
 
-ORDER BY e.entryTime DESC
-""")
-    ItemReportDto getItemByName(String name);
+    ORDER BY e.entryTime DESC
+    """)
     List<ItemReportDto> getItemReport(
             @Param("start") LocalDate start,
             @Param("end") LocalDate end
     );
 
+
+    // ✅ 2. ITEM SEARCH (for Item Lookup page)
+    @Query("""
+    SELECT new org.BalajiStore.Dto.ItemReportDto(
+
+        p.name,
+
+        (p.quantity
+          - COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0 END),0)
+          + COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0 END),0)
+        ),
+
+        COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0 END),0),
+
+        COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0 END),0),
+
+        p.quantity,
+
+        COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase'
+            THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0),
+
+        COALESCE(SUM(CASE WHEN LOWER(e.type)='usage'
+            THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0),
+
+        (p.quantity * COALESCE(p.price,0)),
+
+        CURRENT_DATE
+    )
+
+    FROM Product p
+    LEFT JOIN DailyEntry e
+    ON LOWER(TRIM(p.name)) = LOWER(TRIM(e.itemName))
+
+    WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))
+
+    GROUP BY p.name, p.quantity, p.price
+    """)
+    ItemReportDto getItemByName(@Param("name") String name);
+
+
+    // ✅ optional (keep)
     List<DailyEntry> findByEntryTime(LocalDate date);
 }
