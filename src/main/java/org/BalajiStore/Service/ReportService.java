@@ -24,4 +24,7 @@ public class ReportService {
 
         return repository.getItemReport(startDate, endDate);
     }
+    public ItemReportDto getItemByName(String name) {
+        return repository.getItemByName(name);
+    }
 }

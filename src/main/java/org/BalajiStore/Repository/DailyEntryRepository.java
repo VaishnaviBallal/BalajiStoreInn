@@ -48,6 +48,7 @@ GROUP BY p.name, p.quantity, p.price, e.entryTime
 
 ORDER BY e.entryTime DESC
 """)
+    ItemReportDto getItemByName(String name);
     List<ItemReportDto> getItemReport(
             @Param("start") LocalDate start,
             @Param("end") LocalDate end

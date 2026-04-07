@@ -43,4 +43,8 @@ public class ReportController {
                 .header("Content-Type", "application/pdf")
                 .body(pdf);
     }
+    @GetMapping("/item")
+    public ItemReportDto getItemByName(@RequestParam String name) {
+        return reportService.getItemByName(name);
+    }
 }
