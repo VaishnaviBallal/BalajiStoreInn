@@ -35,7 +35,7 @@ SELECT new org.BalajiStore.Dto.ItemReportDto(
 
     (p.quantity * COALESCE(p.price,0)),
 
-    e.entryTime   -- ✅ date column
+    e.entryTime   
 )
 
 FROM Product p
@@ -44,7 +44,7 @@ ON LOWER(TRIM(p.name)) = LOWER(TRIM(e.itemName))
 
 WHERE e.entryTime BETWEEN :start AND :end
 
-GROUP BY p.name, p.quantity, p.price, e.entryTime   -- ✅ VERY IMPORTANT
+GROUP BY p.name, p.quantity, p.price, e.entryTime  
 
 ORDER BY e.entryTime DESC
 """)
