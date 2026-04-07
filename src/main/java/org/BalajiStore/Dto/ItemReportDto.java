@@ -1,5 +1,7 @@
 package org.BalajiStore.Dto;
 
+import java.time.LocalDate;
+
 public class ItemReportDto {
 
     private String itemName;
@@ -11,6 +13,7 @@ public class ItemReportDto {
     private double usageAmount;
     private double stockValue;
     private String dateRange;
+    private LocalDate date;
 
     public ItemReportDto() {
     }
@@ -22,12 +25,16 @@ public class ItemReportDto {
                          Double closingStock,
                          Double purchaseAmount,
                          Double usageAmount,
-                         Double stockValue) {
+                         Double stockValue,
+                         LocalDate date
+    ) {
                          String dateRange;
+
         this.itemName = itemName;
         this.openingStock = openingStock;
         this.purchased = purchased;
         this.used = used;
+        this.date = date;
         this.closingStock = closingStock;
         this.purchaseAmount = purchaseAmount;
         this.usageAmount = usageAmount;

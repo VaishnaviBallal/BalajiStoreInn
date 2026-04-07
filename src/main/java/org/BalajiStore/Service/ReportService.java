@@ -22,16 +22,6 @@ public class ReportService {
         LocalDate startDate = LocalDate.parse(start);
         LocalDate endDate = LocalDate.parse(end);
 
-        List<ItemReportDto> reportList =
-                repository.getItemReport(startDate, endDate);
-
-        // ✅ ADD THIS (date range)
-        String dateRange = start + " to " + end;
-
-        for (ItemReportDto item : reportList) {
-            item.setDateRange(dateRange);
-        }
-
-        return reportList;
+        return repository.getItemReport(startDate, endDate);
     }
 }
