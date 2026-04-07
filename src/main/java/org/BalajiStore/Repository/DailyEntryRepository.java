@@ -56,42 +56,41 @@ public interface DailyEntryRepository extends JpaRepository<DailyEntry, Long> {
     );
 
 
-    // ✅ 2. ITEM SEARCH (for Item Lookup page)
     @Query("""
-    SELECT new org.BalajiStore.Dto.ItemReportDto(
+SELECT new org.BalajiStore.Dto.ItemReportDto(
 
-        p.name,
+    p.name,
 
-        (p.quantity
-          - COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0 END),0)
-          + COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0 END),0)
-        ),
+    (p.quantity
+      - COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0 END),0)
+      + COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0 END),0)
+    ),
 
-        COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0 END),0),
+    COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0 END),0),
 
-        COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0 END),0),
+    COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0 END),0),
 
-        p.quantity,
+    p.quantity,
 
-        COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase'
-            THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0),
+    COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase'
+        THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0),
 
-        COALESCE(SUM(CASE WHEN LOWER(e.type)='usage'
-            THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0),
+    COALESCE(SUM(CASE WHEN LOWER(e.type)='usage'
+        THEN e.quantity * COALESCE(e.price,0) ELSE 0 END),0),
 
-        (p.quantity * COALESCE(p.price,0)),
+    (p.quantity * COALESCE(p.price,0)),
 
-        CURRENT_DATE
-    )
+    CURRENT_DATE
+)
 
-    FROM Product p
-    LEFT JOIN DailyEntry e
-    ON LOWER(TRIM(p.name)) = LOWER(TRIM(e.itemName))
+FROM Product p
+LEFT JOIN DailyEntry e
+ON LOWER(TRIM(p.name)) = LOWER(TRIM(e.itemName))
 
-    WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))
+WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))
 
-    GROUP BY p.name, p.quantity, p.price
-    """)
+GROUP BY p.name, p.quantity, p.price
+""")
     List<ItemReportDto> getItemByName(@Param("name") String name);
 
 
