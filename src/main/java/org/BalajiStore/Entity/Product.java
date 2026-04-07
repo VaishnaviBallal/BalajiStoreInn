@@ -1,10 +1,17 @@
 package org.BalajiStore.Entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "products")
 public class Product {
+
+    @Column(name = "created_date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate createdDate;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +37,10 @@ public class Product {
         return id;
     }
 
+    public LocalDate getCreatedDate() {
+        return createdDate;
+    }
+
     public String getName() {
         return name;
     }
@@ -47,6 +58,10 @@ public class Product {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setCreatedDate(LocalDate createdDate) {
+        this.createdDate = createdDate;
     }
 
     public void setName(String name) {
