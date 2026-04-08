@@ -80,7 +80,7 @@ SELECT new org.BalajiStore.Dto.ItemReportDto(
 
     (p.quantity * COALESCE(p.price,0)),
 
-    CURRENT_DATE
+    NULL
 )
 
 FROM Product p
