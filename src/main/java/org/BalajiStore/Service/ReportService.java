@@ -5,7 +5,6 @@ import org.BalajiStore.Repository.DailyEntryRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -17,6 +16,7 @@ public class ReportService {
         this.repository = repository;
     }
 
+    // Date range report
     public List<ItemReportDto> getReport(String start, String end) {
 
         LocalDate startDate = LocalDate.parse(start);
@@ -24,16 +24,24 @@ public class ReportService {
 
         return repository.getItemReport(startDate, endDate);
     }
+
+    // Summary card report
     public ItemReportDto getItemByName(String name) {
 
-        List<ItemReportDto> list = repository.getItemByName(name);
+        List<ItemReportDto> list = repository.getItemDaywiseReport(name);
 
         if (list.isEmpty()) {
             throw new RuntimeException("Item not found");
         }
 
-        return list.stream().findFirst()
+        return list.stream()
+                .findFirst()
                 .orElseThrow(() -> new RuntimeException("Item not found"));
-
     }
+
+    // Daywise report
+    public List<ItemReportDto> getItemDaywiseReport(String name) {
+        return repository.getItemDaywiseReport(name);
+    }
+
 }

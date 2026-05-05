@@ -31,6 +31,9 @@ public class DailyEntry {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate entryTime;
 
+    @Column(name = "deleted")
+    private Boolean deleted = false;
+
     public DailyEntry() {}
 
     // ✅ Auto calculate (backup safety)
@@ -59,6 +62,11 @@ public class DailyEntry {
         }
         return totalPrice;
     }
+    public Boolean isDeleted() {
+        return deleted;
+    }
+
+
 
     // ✅ Setters
     public void setId(Long id) { this.id = id; }
@@ -71,4 +79,7 @@ public class DailyEntry {
     public void setPrice(Double price) { this.price = price; }
 
     public void setTotalPrice(Double totalPrice) { this.totalPrice = totalPrice; }
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
 }

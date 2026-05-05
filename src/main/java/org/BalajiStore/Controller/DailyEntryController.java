@@ -46,4 +46,16 @@ public class DailyEntryController {
                                   @RequestBody DailyEntry entry) {
         return dailyEntryService.updateEntry(id, entry);
     }
+    @GetMapping("/bin")
+    public List<DailyEntry> getBinEntries() {
+        return dailyEntryService.getBinEntries();
+    }
+    @PutMapping("/restore/{id}")
+    public void restore(@PathVariable Long id) {
+        dailyEntryService.restoreEntry(id);
+    }
+    @DeleteMapping("/permanent/{id}")
+    public void deletePermanently(@PathVariable Long id) {
+        dailyEntryService.deletePermanently(id);
+    }
 }

@@ -68,16 +68,16 @@ public class DailyEntryService {
     }
 
     public List<DailyEntry> getAllEntries() {
-        return entryRepository.findByEntryTime(LocalDate.now());
+        return entryRepository.findByEntryTimeAndDeletedFalse(LocalDate.now());
     }
 
     public void deleteEntry(Long id) {
 
-        if (entryRepository.existsById(id)) {
-            entryRepository.deleteById(id);
-        } else {
-            throw new RuntimeException("Entry not found");
-        }
+        DailyEntry entry = entryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Entry not found"));
+
+        entry.setDeleted(true);   // move to bin
+        entryRepository.save(entry);
     }
 
     public List<DailyEntry> getEntriesByDate(String date) {
@@ -109,5 +109,23 @@ public class DailyEntryService {
         }
 
         return entryRepository.save(existing);
+    }
+    public List<DailyEntry> getBinEntries() {
+        return entryRepository.findByDeletedTrue();
+    }
+    public void restoreEntry(Long id) {
+
+        DailyEntry entry = entryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Not found"));
+
+        entry.setDeleted(false);
+        entryRepository.save(entry);
+    }
+    public void deletePermanently(Long id) {
+        if (entryRepository.existsById(id)) {
+            entryRepository.deleteById(id);
+        } else {
+            throw new RuntimeException("Entry not found");
+        }
     }
 }
