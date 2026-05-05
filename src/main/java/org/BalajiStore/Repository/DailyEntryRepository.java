@@ -1,5 +1,6 @@
 package org.BalajiStore.Repository;
 
+import org.BalajiStore.Dto.ItemHistoryDto;
 import org.BalajiStore.Dto.ItemReportDto;
 import org.BalajiStore.Model.DailyEntry;
 import org.BalajiStore.Entity.Product;
@@ -93,7 +94,95 @@ GROUP BY p.name, p.quantity, p.price
 """)
     List<ItemReportDto> getItemByName(@Param("name") String name);
 
+    @Query("""
+SELECT new org.BalajiStore.Dto.ItemReportDto(
 
+    p.name,
+
+    /* Opening Stock → fixed as 0.0 to avoid negative wrong values */
+    0.0,
+
+    /* Purchased */
+    COALESCE(SUM(CASE
+        WHEN LOWER(e.type) = 'purchase'
+        THEN e.quantity
+        ELSE 0
+    END), 0),
+
+    /* Used */
+    COALESCE(SUM(CASE
+        WHEN LOWER(e.type) = 'usage'
+        THEN e.quantity
+        ELSE 0
+    END), 0),
+
+    /* Closing Stock */
+    (
+        0.0
+        + COALESCE(SUM(CASE
+            WHEN LOWER(e.type) = 'purchase'
+            THEN e.quantity
+            ELSE 0
+        END), 0)
+        - COALESCE(SUM(CASE
+            WHEN LOWER(e.type) = 'usage'
+            THEN e.quantity
+            ELSE 0
+        END), 0)
+    ),
+
+    /* Purchase Amount */
+    COALESCE(SUM(CASE
+        WHEN LOWER(e.type) = 'purchase'
+        THEN e.quantity * COALESCE(e.price, 0)
+        ELSE 0
+    END), 0),
+
+    /* Usage Amount */
+    COALESCE(SUM(CASE
+        WHEN LOWER(e.type) = 'usage'
+        THEN e.quantity * COALESCE(e.price, 0)
+        ELSE 0
+    END), 0),
+
+    /* Stock Value */
+    (
+        (
+            0.0
+            + COALESCE(SUM(CASE
+                WHEN LOWER(e.type) = 'purchase'
+                THEN e.quantity
+                ELSE 0
+            END), 0)
+            - COALESCE(SUM(CASE
+                WHEN LOWER(e.type) = 'usage'
+                THEN e.quantity
+                ELSE 0
+            END), 0)
+        )
+        * COALESCE(p.price, 0)
+    ),
+
+    /* Date */
+    e.entryTime
+)
+
+FROM Product p
+JOIN DailyEntry e
+ON LOWER(TRIM(p.name)) = LOWER(TRIM(e.itemName))
+
+WHERE LOWER(TRIM(p.name)) = LOWER(TRIM(:name))
+
+GROUP BY
+    p.name,
+    p.price,
+    e.entryTime
+
+ORDER BY e.entryTime DESC
+""")
+    List<ItemReportDto> getItemHistoryByName(
+            @Param("name") String name
+    );
     // ✅ optional (keep)
     List<DailyEntry> findByEntryTime(LocalDate date);
 }

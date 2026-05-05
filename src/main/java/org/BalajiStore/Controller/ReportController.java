@@ -1,5 +1,6 @@
 package org.BalajiStore.Controller;
 
+import org.BalajiStore.Dto.ItemHistoryDto;
 import org.BalajiStore.Dto.ItemReportDto;
 import org.BalajiStore.Service.ReportPdfService;
 import org.BalajiStore.Service.ReportService;
@@ -46,5 +47,11 @@ public class ReportController {
     @GetMapping("/item")
     public ItemReportDto getItemByName(@RequestParam String name) {
         return reportService.getItemByName(name);
+    }
+    @GetMapping("/item-history")
+    public List<ItemReportDto> getItemHistory(
+            @RequestParam String name
+    ) {
+        return reportService.getItemHistory(name);
     }
 }

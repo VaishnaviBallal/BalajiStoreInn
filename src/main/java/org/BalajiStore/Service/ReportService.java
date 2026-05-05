@@ -1,5 +1,6 @@
 package org.BalajiStore.Service;
 
+import org.BalajiStore.Dto.ItemHistoryDto;
 import org.BalajiStore.Dto.ItemReportDto;
 import org.BalajiStore.Repository.DailyEntryRepository;
 import org.springframework.stereotype.Service;
@@ -35,5 +36,8 @@ public class ReportService {
         return list.stream().findFirst()
                 .orElseThrow(() -> new RuntimeException("Item not found"));
 
+    }
+    public List<ItemReportDto> getItemHistory(String name) {
+        return repository.getItemHistoryByName(name);
     }
 }
