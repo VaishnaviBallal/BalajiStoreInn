@@ -23,127 +23,158 @@ public class OrderController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    // ==============================
-    // CREATE ORDER (YOU ALREADY HAVE)
-    // ==============================
+    // =====================================
+    // CREATE ORDER
+    // =====================================
     @PostMapping
     public ResponseDTO createOrder(@RequestBody OrderDTO dto) {
 
         Order order = new Order();
+
         order.setTotal(dto.getTotal());
         order.setTableNo(dto.getTableNo());
         order.setStatus("NEW");
 
         List<OrderItem> items = dto.getItems().stream().map(i -> {
+
             OrderItem item = new OrderItem();
+
             item.setName(i.getName());
             item.setPrice(i.getPrice());
             item.setQuantity(i.getQuantity());
+
             return item;
+
         }).toList();
 
         order.setItems(items);
 
         Order saved = orderRepository.save(order);
 
-        List<OrderItemDTO> itemDTOs = saved.getItems().stream().map(i -> {
-            OrderItemDTO d = new OrderItemDTO();
-            d.setName(i.getName());
-            d.setPrice(i.getPrice());
-            d.setQuantity(i.getQuantity());
-            return d;
-        }).toList();
-
-        ResponseDTO response = new ResponseDTO();
-        response.setId(saved.getId());
-        response.setTableNo(saved.getTableNo());
-        response.setTotal(saved.getTotal());
-        response.setStatus(saved.getStatus());
-        response.setItems(itemDTOs);
+        ResponseDTO response = convertToDTO(saved);
 
         messagingTemplate.convertAndSend("/topic/orders", response);
+
+        System.out.println("🔥 NEW ORDER SENT");
 
         return response;
     }
 
-    // ==============================
-    // ✅ NEW: ACCEPT ORDER API
-    // ==============================
+    // =====================================
+    // GET ALL ORDERS
+    // =====================================
+    @GetMapping("/all")
+    public List<ResponseDTO> getAllOrders() {
+
+        return orderRepository.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    // =====================================
+    // ACCEPT ORDER
+    // =====================================
     @PutMapping("/{id}/accept")
     public ResponseDTO acceptOrder(@PathVariable Long id) {
 
+        System.out.println("👉 ACCEPT ORDER: " + id);
+
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new RuntimeException("Order Not Found"));
 
         order.setStatus("ACCEPTED");
 
         Order saved = orderRepository.save(order);
 
-        List<OrderItemDTO> items = saved.getItems().stream().map(i -> {
-            OrderItemDTO d = new OrderItemDTO();
-            d.setName(i.getName());
-            d.setPrice(i.getPrice());
-            d.setQuantity(i.getQuantity());
-            return d;
-        }).toList();
+        ResponseDTO response = convertToDTO(saved);
 
-        ResponseDTO response = new ResponseDTO();
-        response.setId(saved.getId());
-        response.setTableNo(saved.getTableNo());
-        response.setTotal(saved.getTotal());
-        response.setStatus(saved.getStatus());
-        response.setItems(items);
-
-        // optional live update to admin
         messagingTemplate.convertAndSend("/topic/orders", response);
+
+        System.out.println("✅ ORDER ACCEPTED");
 
         return response;
     }
 
-    // ==============================
-    // 🆕 NEW ORDERS
-    // ==============================
-    @GetMapping("/new")
-    public List<Order> getNewOrders() {
-        return orderRepository.findByStatus("NEW");
-    }
-
-    // ==============================
-    // 🍳 ACTIVE ORDERS
-    // ==============================
-    @GetMapping("/active")
-    public List<Order> getActiveOrders() {
-        return orderRepository.findByStatusIn(
-                List.of("ACCEPTED")
-        );
-    }
-
-    // ==============================
-    // 📜 HISTORY (ALL EXCEPT NEW)
-    // ==============================
-    @GetMapping("/history")
-    public List<Order> getHistory() {
-        return orderRepository.findByStatusIn(
-                List.of("ACCEPTED")
-        );
-    }
+    // =====================================
+    // COMPLETE ORDER
+    // =====================================
     @PutMapping("/{id}/complete")
-    public Order completeOrder(@PathVariable Long id) {
-        Order order = orderRepository.findById(id).orElseThrow();
+    public ResponseDTO completeOrder(@PathVariable Long id) {
+
+        System.out.println("🍳 COMPLETE ORDER: " + id);
+
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order Not Found"));
 
         order.setStatus("COMPLETED");
+
         Order saved = orderRepository.save(order);
 
-        messagingTemplate.convertAndSend("/topic/orders", saved);
-        return saved;
-    }
-    @GetMapping("/status/{status}")
-    public List<Order> getByStatus(@PathVariable String status) {
-        return orderRepository.findByStatus(status);
+        ResponseDTO response = convertToDTO(saved);
+
+        messagingTemplate.convertAndSend("/topic/orders", response);
+
+        System.out.println("✅ ORDER COMPLETED");
+
+        return response;
     }
 
-    @GetMapping("/all")
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    // =====================================
+    // DELETE SINGLE ORDER
+    // =====================================
+    @DeleteMapping("/{id}")
+    public String deleteOrder(@PathVariable Long id) {
+
+        System.out.println("🗑 DELETE ORDER: " + id);
+
+        orderRepository.deleteById(id);
+
+        return "Order Deleted";
+    }
+
+    // =====================================
+    // CLEAR HISTORY
+    // =====================================
+    @DeleteMapping("/history/clear")
+    public String clearHistory() {
+
+        System.out.println("🧹 CLEARING HISTORY");
+
+        List<Order> completedOrders =
+                orderRepository.findByStatus("COMPLETED");
+
+        orderRepository.deleteAll(completedOrders);
+
+        return "History Cleared";
+    }
+
+    // =====================================
+    // DTO CONVERTER
+    // =====================================
+    private ResponseDTO convertToDTO(Order order) {
+
+        List<OrderItemDTO> itemDTOs =
+                order.getItems().stream().map(i -> {
+
+                    OrderItemDTO dto = new OrderItemDTO();
+
+                    dto.setName(i.getName());
+                    dto.setPrice(i.getPrice());
+                    dto.setQuantity(i.getQuantity());
+
+                    return dto;
+
+                }).toList();
+
+        ResponseDTO response = new ResponseDTO();
+
+        response.setId(order.getId());
+        response.setTableNo(order.getTableNo());
+        response.setTotal(order.getTotal());
+        response.setStatus(order.getStatus());
+        response.setItems(itemDTOs);
+
+        return response;
     }
 }
