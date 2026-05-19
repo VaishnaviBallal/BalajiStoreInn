@@ -13,16 +13,32 @@ public class SpaConfig implements WebMvcConfigurer {
         registry.addViewController("/")
                 .setViewName("forward:/index.html");
 
-        registry.addViewController("/customer-menu")
-                .setViewName("forward:/index.html");
-
-        registry.addViewController("/admin-orders")
+        registry.addViewController("/login")
                 .setViewName("forward:/index.html");
 
         registry.addViewController("/qr-generator")
                 .setViewName("forward:/index.html");
 
         registry.addViewController("/home")
+                .setViewName("forward:/index.html");
+
+        registry.addViewController("/menu")
+                .setViewName("forward:/index.html");
+        registry.addViewController("/dashboard")
+                .setViewName("forward:/index.html");
+        registry.addViewController("/items-entry")
+                .setViewName("forward:/index.html");
+        registry.addViewController("/daily-entry")
+                .setViewName("forward:/index.html");
+        registry.addViewController("/item-lookup")
+                .setViewName("forward:/index.html");
+        registry.addViewController("/reports")
+                .setViewName("forward:/index.html");
+        registry.addViewController("/bin")
+                .setViewName("forward:/index.html");
+        registry.addViewController("/admin-orders")
+                .setViewName("forward:/index.html");
+        registry.addViewController("/customer-menu/{tableNo}")
                 .setViewName("forward:/index.html");
     }
 }
