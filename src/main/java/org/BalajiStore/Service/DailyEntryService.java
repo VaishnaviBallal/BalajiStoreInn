@@ -19,25 +19,31 @@ public class DailyEntryService {
     @Autowired
     private ProductRepository productRepository;
 
-
-
+    // =========================
+    // SAVE ENTRY (FIXED)
+    // =========================
     public DailyEntry saveEntry(DailyEntry entry) {
 
         if (entry.getEntryTime() == null) {
             entry.setEntryTime(LocalDate.now());
         }
 
-        Product product = productRepository.findByNameIgnoreCase(entry.getItemName());
-
-        if (product == null) {
-            throw new RuntimeException("Product not found: " + entry.getItemName());
-        }
+        // ✅ MUST USE productId (NOT NAME)
+        Product product = productRepository.findById(entry.getProductId())
+                .orElseThrow(() -> new RuntimeException(
+                        "Product not found with id: " + entry.getProductId()
+                ));
 
         Double currentQty = product.getQuantity();
+
+        // store name for UI/report only
+        entry.setItemName(product.getName());
 
         if (entry.getType().equalsIgnoreCase("purchase")) {
 
             product.setQuantity(currentQty + entry.getQuantity());
+
+            // update product price on purchase
             product.setPrice(entry.getPrice());
 
         } else if (entry.getType().equalsIgnoreCase("usage")) {
@@ -48,11 +54,11 @@ public class DailyEntryService {
 
             product.setQuantity(currentQty - entry.getQuantity());
 
-            // ✅ ensure usage uses product price
+            // usage uses product price
             entry.setPrice(product.getPrice());
         }
 
-        // ✅ IMPORTANT FIX (force calculation)
+        // calculate total
         if (entry.getQuantity() != null && entry.getPrice() != null) {
             entry.setTotalPrice(entry.getQuantity() * entry.getPrice());
         } else {
@@ -60,41 +66,60 @@ public class DailyEntryService {
         }
 
         productRepository.save(product);
-        System.out.println("QTY: " + entry.getQuantity());
-        System.out.println("PRICE: " + entry.getPrice());
-        System.out.println("TOTAL BEFORE SAVE: " + entry.getTotalPrice());
 
         return entryRepository.save(entry);
     }
 
+    // =========================
+    // GET TODAY ENTRIES
+    // =========================
     public List<DailyEntry> getAllEntries() {
         return entryRepository.findByEntryTimeAndDeletedFalse(LocalDate.now());
     }
 
+    // =========================
+    // SOFT DELETE
+    // =========================
     public void deleteEntry(Long id) {
 
         DailyEntry entry = entryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Entry not found"));
 
-        entry.setDeleted(true);   // move to bin
+        entry.setDeleted(true);
         entryRepository.save(entry);
     }
 
+    // =========================
+    // GET BY DATE
+    // =========================
     public List<DailyEntry> getEntriesByDate(String date) {
+
         LocalDate selectedDate = LocalDate.parse(date);
+
         return entryRepository.findByEntryTime(selectedDate);
     }
 
+    // =========================
+    // GET ALL
+    // =========================
     public List<DailyEntry> getAll() {
         return entryRepository.findAll();
     }
 
+    // =========================
+    // UPDATE ENTRY (FIXED)
+    // =========================
     public DailyEntry updateEntry(Long id, DailyEntry entry) {
 
         DailyEntry existing = entryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Entry not found"));
 
-        existing.setItemName(entry.getItemName());
+        Product product = productRepository.findById(entry.getProductId())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        existing.setProductId(product.getId());
+        existing.setItemName(product.getName());
+
         existing.setType(entry.getType());
         existing.setQuantity(entry.getQuantity());
         existing.setPrice(entry.getPrice());
@@ -103,16 +128,20 @@ public class DailyEntryService {
             existing.setEntryTime(entry.getEntryTime());
         }
 
-        // ✅ recalculate on update
         if (existing.getQuantity() != null && existing.getPrice() != null) {
             existing.setTotalPrice(existing.getQuantity() * existing.getPrice());
         }
 
         return entryRepository.save(existing);
     }
+
+    // =========================
+    // BIN / RESTORE
+    // =========================
     public List<DailyEntry> getBinEntries() {
         return entryRepository.findByDeletedTrue();
     }
+
     public void restoreEntry(Long id) {
 
         DailyEntry entry = entryRepository.findById(id)
@@ -121,7 +150,9 @@ public class DailyEntryService {
         entry.setDeleted(false);
         entryRepository.save(entry);
     }
+
     public void deletePermanently(Long id) {
+
         if (entryRepository.existsById(id)) {
             entryRepository.deleteById(id);
         } else {

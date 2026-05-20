@@ -55,8 +55,8 @@ SELECT new org.BalajiStore.Dto.ItemReportDto(
 )
 
 FROM Product p
-JOIN DailyEntry e
-ON LOWER(TRIM(p.name)) = LOWER(TRIM(e.itemName))
+LEFT JOIN DailyEntry e
+ON p.id = e.productId
 
 WHERE e.entryTime BETWEEN :start AND :end
 
@@ -80,107 +80,87 @@ SELECT new org.BalajiStore.Dto.ItemReportDto(
     CASE
         WHEN (
             COALESCE(p.quantity, 0.0)
-
-            - COALESCE(SUM(
-                CASE
-                    WHEN LOWER(e.type) = 'purchase'
-                    THEN e.quantity
-                    ELSE 0.0
-                END
-            ), 0.0)
-
-            + COALESCE(SUM(
-                CASE
-                    WHEN LOWER(e.type) = 'usage'
-                    THEN e.quantity
-                    ELSE 0.0
-                END
-            ), 0.0)
-        ) < 0
-
-        THEN 0.0
-
+            - COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0.0 END), 0.0)
+            + COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0.0 END), 0.0)
+        ) < 0 THEN 0.0
         ELSE (
             COALESCE(p.quantity, 0.0)
-
-            - COALESCE(SUM(
-                CASE
-                    WHEN LOWER(e.type) = 'purchase'
-                    THEN e.quantity
-                    ELSE 0.0
-                END
-            ), 0.0)
-
-            + COALESCE(SUM(
-                CASE
-                    WHEN LOWER(e.type) = 'usage'
-                    THEN e.quantity
-                    ELSE 0.0
-                END
-            ), 0.0)
+            - COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0.0 END), 0.0)
+            + COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0.0 END), 0.0)
         )
     END,
 
-    COALESCE(SUM(
-        CASE
-            WHEN LOWER(e.type) = 'purchase'
-            THEN e.quantity
-            ELSE 0.0
-        END
-    ), 0.0),
+    COALESCE(
+        SUM(
+            CASE
+                WHEN LOWER(e.type)='purchase'
+                THEN e.quantity
+                ELSE 0.0
+            END
+        ),
+        0.0
+    ),
 
-    COALESCE(SUM(
-        CASE
-            WHEN LOWER(e.type) = 'usage'
-            THEN e.quantity
-            ELSE 0.0
-        END
-    ), 0.0),
+    COALESCE(
+        SUM(
+            CASE
+                WHEN LOWER(e.type)='usage'
+                THEN e.quantity
+                ELSE 0.0
+            END
+        ),
+        0.0
+    ),
 
     COALESCE(p.quantity, 0.0),
 
-    COALESCE(SUM(
-        CASE
-            WHEN LOWER(e.type) = 'purchase'
-            THEN e.quantity * COALESCE(e.price, 0.0)
-            ELSE 0.0
-        END
-    ), 0.0),
-
-    COALESCE(SUM(
-        CASE
-            WHEN LOWER(e.type) = 'usage'
-            THEN e.quantity * COALESCE(e.price, 0.0)
-            ELSE 0.0
-        END
-    ), 0.0),
-
-    (
-        COALESCE(p.quantity, 0.0)
-        * COALESCE(p.price, 0.0)
+    COALESCE(
+        SUM(
+            CASE
+                WHEN LOWER(e.type)='purchase'
+                THEN e.quantity * COALESCE(e.price, 0.0)
+                ELSE 0.0
+            END
+        ),
+        0.0
     ),
 
-    e.entryTime
+    COALESCE(
+        SUM(
+            CASE
+                WHEN LOWER(e.type)='usage'
+                THEN e.quantity * COALESCE(e.price, 0.0)
+                ELSE 0.0
+            END
+        ),
+        0.0
+    ),
+
+    (COALESCE(p.quantity, 0.0) * COALESCE(p.price, 0.0)),
+
+    COALESCE(e.entryTime, p.createdDate)
+
 )
 
 FROM Product p
-JOIN DailyEntry e
-ON LOWER(TRIM(p.name)) = LOWER(TRIM(e.itemName))
 
-WHERE LOWER(p.name)
-LIKE LOWER(CONCAT('%', :name, '%'))
+LEFT JOIN DailyEntry e
+ON p.id = e.productId
+
+WHERE LOWER(TRIM(p.name))
+=
+LOWER(TRIM(:name))
 
 GROUP BY
     p.name,
     p.quantity,
     p.price,
-    e.entryTime
+    e.entryTime,
+    p.createdDate
 
-ORDER BY e.entryTime DESC
+ORDER BY COALESCE(e.entryTime, p.createdDate) DESC
 """)
-    List<ItemReportDto> getItemDaywiseReport(
-            @Param("name") String name
-    );
+    List<ItemReportDto> getItemDaywiseReport(@Param("name") String name);
 
     @Query("""
 SELECT new org.BalajiStore.Dto.ReportDto(

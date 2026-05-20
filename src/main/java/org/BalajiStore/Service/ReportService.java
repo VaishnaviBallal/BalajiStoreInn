@@ -16,7 +16,9 @@ public class ReportService {
         this.repository = repository;
     }
 
-    // Date range report
+    // =========================
+    // DATE RANGE REPORT
+    // =========================
     public List<ItemReportDto> getReport(String start, String end) {
 
         LocalDate startDate = LocalDate.parse(start);
@@ -25,23 +27,33 @@ public class ReportService {
         return repository.getItemReport(startDate, endDate);
     }
 
-    // Summary card report
+    // =========================
+    // ITEM SUMMARY (FIXED SAFE)
+    // =========================
     public ItemReportDto getItemByName(String name) {
 
-        List<ItemReportDto> list = repository.getItemDaywiseReport(name);
+        String cleanName = name.trim();
 
-        if (list.isEmpty()) {
-            throw new RuntimeException("Item not found");
+        List<ItemReportDto> list =
+                repository.getItemDaywiseReport(cleanName);
+
+        if (list == null || list.isEmpty()) {
+            return new ItemReportDto(
+                    cleanName,
+                    0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0,
+                    null
+            );
         }
 
-        return list.stream()
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Item not found"));
+        // return latest record (safe fallback)
+        return list.get(0);
     }
 
-    // Daywise report
+    // =========================
+    // DAYWISE REPORT
+    // =========================
     public List<ItemReportDto> getItemDaywiseReport(String name) {
-        return repository.getItemDaywiseReport(name);
+        return repository.getItemDaywiseReport(name.trim());
     }
-
 }

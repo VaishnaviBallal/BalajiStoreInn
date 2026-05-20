@@ -26,7 +26,7 @@ public class ReportController {
     /* =========================
        DATE RANGE REPORT
     ========================= */
-    @GetMapping("/items")
+    @GetMapping("/item")
     public List<ItemReportDto> getReport(
             @RequestParam String start,
             @RequestParam String end) {
@@ -37,7 +37,7 @@ public class ReportController {
     /* =========================
        DATE RANGE PDF
     ========================= */
-    @GetMapping("/items/pdf")
+    @GetMapping("/item/pdf")
     public ResponseEntity<byte[]> downloadPdf(
             @RequestParam String start,
             @RequestParam String end) {
@@ -56,12 +56,7 @@ public class ReportController {
     /* =========================
        SINGLE ITEM SUMMARY
     ========================= */
-    @GetMapping("/item")
-    public ItemReportDto getItemByName(
-            @RequestParam String name) {
 
-        return reportService.getItemByName(name);
-    }
 
     /* =========================
        DAYWISE REPORT
