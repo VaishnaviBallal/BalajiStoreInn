@@ -38,21 +38,30 @@ public class ReportPdfService {
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf);
 
-            document.add(new Paragraph("Balaji Store Monthly Report")
-                    .setBold().setFontSize(16));
+            document.add(new Paragraph("Balaji Store Report")
+                    .setBold()
+                    .setFontSize(16));
 
-            Table table = new Table(5);
+            // 9 columns
+            Table table = new Table(9);
 
+            table.addCell("Date");
             table.addCell("Item");
             table.addCell("Opening");
             table.addCell("Purchased");
             table.addCell("Used");
             table.addCell("Closing");
+            table.addCell("Total Purchase ₹");
+            table.addCell("Total Usage ₹");
+            table.addCell("Stock Value ₹");
 
             double totalOpening = 0;
             double totalPurchased = 0;
             double totalUsed = 0;
             double totalClosing = 0;
+            double totalPurchaseAmt = 0;
+            double totalUsageAmt = 0;
+            double totalStockValue = 0;
 
             for (ItemReportDto r : reports) {
 
@@ -60,22 +69,38 @@ public class ReportPdfService {
                 totalPurchased += r.getPurchased();
                 totalUsed += r.getUsed();
                 totalClosing += r.getClosingStock();
+                totalPurchaseAmt += r.getPurchaseAmount();
+                totalUsageAmt += r.getUsageAmount();
+                totalStockValue += r.getStockValue();
 
+                table.addCell(String.valueOf(r.getDate()));
                 table.addCell(r.getItemName());
-                table.addCell(String.valueOf(r.getOpeningStock()));
-                table.addCell(String.valueOf(r.getPurchased()));
-                table.addCell(String.valueOf(r.getUsed()));
-                table.addCell(String.valueOf(r.getClosingStock()));
+
+                table.addCell(String.format("%.2f", r.getOpeningStock()));
+                table.addCell(String.format("%.2f", r.getPurchased()));
+                table.addCell(String.format("%.2f", r.getUsed()));
+                table.addCell(String.format("%.2f", r.getClosingStock()));
+
+                table.addCell(formatRs(r.getPurchaseAmount()));
+                table.addCell(formatRs(r.getUsageAmount()));
+                table.addCell(formatRs(r.getStockValue()));
             }
 
-            // ✅ TOTAL ROW
+            // TOTAL ROW
             table.addCell(new Paragraph("TOTAL").setBold());
-            table.addCell(String.valueOf(totalOpening));
-            table.addCell(String.valueOf(totalPurchased));
-            table.addCell(String.valueOf(totalUsed));
-            table.addCell(String.valueOf(totalClosing));
+            table.addCell("-");
+
+            table.addCell(String.format("%.2f", totalOpening));
+            table.addCell(String.format("%.2f", totalPurchased));
+            table.addCell(String.format("%.2f", totalUsed));
+            table.addCell(String.format("%.2f", totalClosing));
+
+            table.addCell(formatRs(totalPurchaseAmt));
+            table.addCell(formatRs(totalUsageAmt));
+            table.addCell(formatRs(totalStockValue));
 
             document.add(table);
+
             document.close();
 
         } catch (Exception e) {
@@ -84,7 +109,6 @@ public class ReportPdfService {
 
         return out.toByteArray();
     }
-
     /* =========================
        DAYWISE ITEM PDF ✅
     ========================= */

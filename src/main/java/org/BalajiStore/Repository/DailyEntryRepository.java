@@ -39,19 +39,20 @@ SELECT new org.BalajiStore.Dto.ItemReportDto(
 
     COALESCE(p.quantity, 0.0),
 
-    COALESCE(SUM(CASE 
-        WHEN LOWER(e.type)='purchase' 
-        THEN e.quantity * COALESCE(e.price,0.0) 
+    COALESCE(SUM(CASE
+        WHEN LOWER(e.type)='purchase'
+        THEN e.quantity * COALESCE(e.price,0.0)
         ELSE 0.0 END), 0.0),
 
-    COALESCE(SUM(CASE 
-        WHEN LOWER(e.type)='usage' 
-        THEN e.quantity * COALESCE(e.price,0.0) 
+    COALESCE(SUM(CASE
+        WHEN LOWER(e.type)='usage'
+        THEN e.quantity * COALESCE(e.price,0.0)
         ELSE 0.0 END), 0.0),
 
     (COALESCE(p.quantity,0.0) * COALESCE(p.price,0.0)),
 
-    NULL   
+    e.entryTime
+
 )
 
 FROM Product p
@@ -63,9 +64,10 @@ WHERE e.entryTime BETWEEN :start AND :end
 GROUP BY
     p.name,
     p.quantity,
-    p.price
+    p.price,
+    e.entryTime
 
-ORDER BY p.name ASC
+ORDER BY e.entryTime DESC
 """)
     List<ItemReportDto> getItemReport(
             @Param("start") LocalDate start,
