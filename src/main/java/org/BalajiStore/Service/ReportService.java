@@ -169,6 +169,30 @@ public class ReportService {
                                 purchased;
             }
 
+            // =========================
+            // PREVENT NEGATIVE STOCK
+            // =========================
+
+            if (
+                    used >
+                            runningStock + purchased
+            ) {
+
+                throw new RuntimeException(
+
+                        "Insufficient Stock. Available: "
+
+                                +
+
+                                (
+                                        runningStock
+                                                +
+                                                purchased
+                                )
+
+                );
+            }
+
             // running stock
 
             runningStock =
