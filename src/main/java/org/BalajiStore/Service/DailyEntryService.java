@@ -94,16 +94,24 @@ public class DailyEntryService {
     // =========================
     public List<DailyEntry> getEntriesByDate(String date) {
 
-        LocalDate selectedDate = LocalDate.parse(date);
+        LocalDate selectedDate =
+                LocalDate.parse(date);
 
-        return entryRepository.findByEntryTime(selectedDate);
+        return entryRepository
+                .findByEntryTimeAndDeletedFalse(
+                        selectedDate
+                );
+
     }
 
     // =========================
     // GET ALL
     // =========================
     public List<DailyEntry> getAll() {
-        return entryRepository.findAll();
+
+        return entryRepository
+                .findByDeletedFalse();
+
     }
 
     // =========================
