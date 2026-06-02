@@ -72,5 +72,7 @@ public class ItemReportDto {
         this.closingStock = closingStock;
     }
 
-
+    public void setStockValue(Double stockValue){
+        this.stockValue = stockValue;
+    }
 }

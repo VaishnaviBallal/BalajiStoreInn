@@ -12,48 +12,198 @@ public class ReportService {
 
     private final DailyEntryRepository repository;
 
-    public ReportService(DailyEntryRepository repository) {
+    public ReportService(
+            DailyEntryRepository repository
+    ) {
         this.repository = repository;
     }
 
     // =========================
     // DATE RANGE REPORT
     // =========================
-    public List<ItemReportDto> getReport(String start, String end) {
 
-        LocalDate startDate = LocalDate.parse(start);
-        LocalDate endDate = LocalDate.parse(end);
+    public List<ItemReportDto> getReport(
+            String start,
+            String end
+    ) {
 
-        return repository.getItemReport(startDate, endDate);
+        LocalDate startDate =
+                LocalDate.parse(start);
+
+        LocalDate endDate =
+                LocalDate.parse(end);
+
+        return repository.getItemReport(
+                startDate,
+                endDate
+        );
     }
 
     // =========================
-    // ITEM SUMMARY (FIXED SAFE)
+    // ITEM SUMMARY
     // =========================
-    public ItemReportDto getItemByName(String name) {
 
-        String cleanName = name.trim();
+    public ItemReportDto getItemByName(
+            String name
+    ) {
 
         List<ItemReportDto> list =
-                repository.getItemDaywiseReport(cleanName);
+                getItemDaywiseReport(
+                        name
+                );
 
-        if (list == null || list.isEmpty()) {
+        if(
+                list == null ||
+                        list.isEmpty()
+        ){
+
             return new ItemReportDto(
-                    cleanName,
-                    0.0, 0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0,
+
+                    name,
+
+                    0.0,
+
+                    0.0,
+
+                    0.0,
+
+                    0.0,
+
+                    0.0,
+
+                    0.0,
+
+                    0.0,
+
                     null
             );
         }
 
-        // return latest record (safe fallback)
-        return list.get(0);
+        // latest row
+
+        return list.get(
+                list.size()-1
+        );
     }
 
     // =========================
     // DAYWISE REPORT
     // =========================
-    public List<ItemReportDto> getItemDaywiseReport(String name) {
-        return repository.getItemDaywiseReport(name.trim());
+
+    public List<ItemReportDto>
+    getItemDaywiseReport(
+            String name
+    ) {
+
+        List<ItemReportDto> list =
+
+                repository
+                        .getItemDaywiseReport(
+                                name.trim()
+                        );
+
+        double runningStock = 0;
+
+        double lastPrice = 0;
+
+        for(
+                ItemReportDto r
+                :
+                list
+        ){
+
+            double purchased =
+
+                    r.getPurchased()==null
+
+                            ?
+
+                            0
+
+                            :
+
+                            r.getPurchased();
+
+            double used =
+
+                    r.getUsed()==null
+
+                            ?
+
+                            0
+
+                            :
+
+                            r.getUsed();
+
+            double purchaseAmount =
+
+                    r.getPurchaseAmount()==null
+
+                            ?
+
+                            0
+
+                            :
+
+                            r.getPurchaseAmount();
+
+            // Opening Stock
+
+            r.setOpeningStock(
+                    runningStock
+            );
+
+            // update latest price only when purchase exists
+
+            if(
+                    purchased > 0
+            ){
+
+                lastPrice =
+
+                        purchaseAmount
+
+                                /
+
+                                purchased;
+            }
+
+            // running stock
+
+            runningStock =
+
+                    runningStock
+
+                            +
+
+                            purchased
+
+                            -
+
+                            used;
+
+            // closing stock
+
+            r.setClosingStock(
+                    runningStock
+            );
+
+            // stock value
+
+            r.setStockValue(
+
+                    runningStock
+
+                            *
+
+                            lastPrice
+
+            );
+
+        }
+
+        return list;
     }
+
 }

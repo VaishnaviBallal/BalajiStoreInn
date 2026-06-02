@@ -67,7 +67,8 @@ GROUP BY
     p.price,
     e.entryTime
 
-ORDER BY e.entryTime DESC
+ORDER BY e.entryTime ASC,
+p.name ASC
 """)
     List<ItemReportDto> getItemReport(
             @Param("start") LocalDate start,
@@ -77,92 +78,95 @@ ORDER BY e.entryTime DESC
     @Query("""
 SELECT new org.BalajiStore.Dto.ItemReportDto(
 
-    p.name,
+p.name,
 
-    CASE
-        WHEN (
-            COALESCE(p.quantity, 0.0)
-            - COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0.0 END), 0.0)
-            + COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0.0 END), 0.0)
-        ) < 0 THEN 0.0
-        ELSE (
-            COALESCE(p.quantity, 0.0)
-            - COALESCE(SUM(CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0.0 END), 0.0)
-            + COALESCE(SUM(CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0.0 END), 0.0)
-        )
-    END,
+COALESCE(p.quantity,0.0)
+-
+COALESCE(
+SUM(
+CASE
+WHEN LOWER(e.type)='purchase'
+THEN e.quantity
+ELSE 0.0
+END
+),0.0)
++
+COALESCE(
+SUM(
+CASE
+WHEN LOWER(e.type)='usage'
+THEN e.quantity
+ELSE 0.0
+END
+),0.0),
 
-    COALESCE(
-        SUM(
-            CASE
-                WHEN LOWER(e.type)='purchase'
-                THEN e.quantity
-                ELSE 0.0
-            END
-        ),
-        0.0
-    ),
+COALESCE(
+SUM(
+CASE
+WHEN LOWER(e.type)='purchase'
+THEN e.quantity
+ELSE 0.0
+END
+),0.0),
 
-    COALESCE(
-        SUM(
-            CASE
-                WHEN LOWER(e.type)='usage'
-                THEN e.quantity
-                ELSE 0.0
-            END
-        ),
-        0.0
-    ),
+COALESCE(
+SUM(
+CASE
+WHEN LOWER(e.type)='usage'
+THEN e.quantity
+ELSE 0.0
+END
+),0.0),
 
-    COALESCE(p.quantity, 0.0),
+COALESCE(p.quantity,0.0),
 
-    COALESCE(
-        SUM(
-            CASE
-                WHEN LOWER(e.type)='purchase'
-                THEN e.quantity * COALESCE(e.price, 0.0)
-                ELSE 0.0
-            END
-        ),
-        0.0
-    ),
+COALESCE(
+SUM(
+CASE
+WHEN LOWER(e.type)='purchase'
+THEN e.quantity*COALESCE(e.price,0)
+ELSE 0
+END
+),0.0),
 
-    COALESCE(
-        SUM(
-            CASE
-                WHEN LOWER(e.type)='usage'
-                THEN e.quantity * COALESCE(e.price, 0.0)
-                ELSE 0.0
-            END
-        ),
-        0.0
-    ),
+COALESCE(
+SUM(
+CASE
+WHEN LOWER(e.type)='usage'
+THEN e.quantity*COALESCE(e.price,0)
+ELSE 0
+END
+),0.0),
 
-    (COALESCE(p.quantity, 0.0) * COALESCE(p.price, 0.0)),
+COALESCE(p.quantity,0.0)
+*
+COALESCE(p.price,0.0),
 
-    COALESCE(e.entryTime, p.createdDate)
+e.entryTime
 
 )
 
 FROM Product p
 
 LEFT JOIN DailyEntry e
-ON p.id = e.productId
+ON p.id=e.productId
 
 WHERE LOWER(TRIM(p.name))
 =
 LOWER(TRIM(:name))
 
 GROUP BY
-    p.name,
-    p.quantity,
-    p.price,
-    e.entryTime,
-    p.createdDate
 
-ORDER BY COALESCE(e.entryTime, p.createdDate) DESC
+p.name,
+p.quantity,
+p.price,
+e.entryTime
+
+ORDER BY e.entryTime ASC
 """)
-    List<ItemReportDto> getItemDaywiseReport(@Param("name") String name);
+    List<ItemReportDto> getItemDaywiseReport(
+            @Param("name") String name
+    );
 
     @Query("""
 SELECT new org.BalajiStore.Dto.ReportDto(
