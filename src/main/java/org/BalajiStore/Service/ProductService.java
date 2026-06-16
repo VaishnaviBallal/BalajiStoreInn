@@ -14,42 +14,73 @@ public class ProductService {
     @Autowired
     private ProductRepository productRepository;
 
+    // =========================
+    // SAVE PRODUCT
+    // =========================
     public Product saveProduct(Product product) {
 
         if (product.getCreatedDate() == null) {
             product.setCreatedDate(LocalDate.now());
         }
 
+        // ONLY set opening stock ON FIRST CREATE
+        if (product.getId() == null) {
+            product.setOpeningQuantity(product.getQuantity());
+        }
+
         return productRepository.save(product);
     }
 
+    // =========================
+    // GET ALL
+    // =========================
     public List<Product> getAllProducts() {
         return productRepository.findAll();
-
     }
 
+    // =========================
+    // GET BY ID
+    // =========================
     public Product getProductById(Long id) {
         return productRepository.findById(id).orElse(null);
     }
 
+    // =========================
+    // UPDATE PRODUCT (SAFE)
+    // =========================
     public Product updateProduct(Long id, Product product) {
 
-        Product existingProduct = productRepository.findById(id).orElse(null);
+        Product existingProduct = productRepository.findById(id)
+                .orElse(null);
 
         if (existingProduct != null) {
+
             existingProduct.setName(product.getName());
-            existingProduct.setQuantity(product.getQuantity());
+            existingProduct.setUnit(product.getUnit());
             existingProduct.setPrice(product.getPrice());
+            existingProduct.setQuantity(product.getQuantity());
+            existingProduct.setOpeningQuantity(product.getOpeningQuantity());
+
+            // ⚠️ IMPORTANT:
+            // DO NOT overwrite quantity manually here
+            // because stock is controlled by DailyEntry
 
             return productRepository.save(existingProduct);
         }
 
         return null;
     }
+
+    // =========================
+    // LOW STOCK
+    // =========================
     public List<Product> getLowStockProducts() {
         return productRepository.findByQuantityLessThan(10);
     }
 
+    // =========================
+    // DELETE
+    // =========================
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }

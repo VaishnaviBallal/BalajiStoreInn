@@ -20,111 +20,75 @@ public interface DailyEntryRepository
     @Query("""
 SELECT new org.BalajiStore.Dto.ItemReportDto(
 
-    p.name,
+p.name,
 
-    CASE
-        WHEN (
-            COALESCE(p.quantity,0.0)
+COALESCE(p.openingQuantity,0.0)
 
-            -
++
 
-            COALESCE(
-            SUM(
-            CASE
-            WHEN LOWER(e.type)='purchase'
-            THEN e.quantity
-            ELSE 0.0
-            END
-            ),0.0)
+COALESCE(
+SUM(
+CASE
+WHEN LOWER(e.type)='usage'
+THEN e.quantity
+ELSE 0.0
+END
+),0.0)
 
-            +
+-
 
-            COALESCE(
-            SUM(
-            CASE
-            WHEN LOWER(e.type)='usage'
-            THEN e.quantity
-            ELSE 0.0
-            END
-            ),0.0)
+COALESCE(
+SUM(
+CASE
+WHEN LOWER(e.type)='purchase'
+THEN e.quantity
+ELSE 0.0
+END
+),0.0),
 
-        ) < 0
+COALESCE(
+SUM(
+CASE
+WHEN LOWER(e.type)='purchase'
+THEN e.quantity
+ELSE 0.0
+END
+),0.0),
 
-        THEN 0.0
+COALESCE(
+SUM(
+CASE
+WHEN LOWER(e.type)='usage'
+THEN e.quantity
+ELSE 0.0
+END
+),0.0),
 
-        ELSE (
+COALESCE(p.openingQuantity,0.0),
 
-            COALESCE(p.quantity,0.0)
+COALESCE(
+SUM(
+CASE
+WHEN LOWER(e.type)='purchase'
+THEN e.quantity*COALESCE(e.price,0)
+ELSE 0
+END
+),0.0),
 
-            -
+COALESCE(
+SUM(
+CASE
+WHEN LOWER(e.type)='usage'
+THEN e.quantity*COALESCE(e.price,0)
+ELSE 0
+END
+),0.0),
 
-            COALESCE(
-            SUM(
-            CASE
-            WHEN LOWER(e.type)='purchase'
-            THEN e.quantity
-            ELSE 0.0
-            END
-            ),0.0)
+COALESCE(p.openingQuantity,0.0)
+*
+COALESCE(p.price,0.0),
 
-            +
-
-            COALESCE(
-            SUM(
-            CASE
-            WHEN LOWER(e.type)='usage'
-            THEN e.quantity
-            ELSE 0.0
-            END
-            ),0.0)
-
-        )
-
-    END,
-
-    COALESCE(
-    SUM(
-    CASE
-    WHEN LOWER(e.type)='purchase'
-    THEN e.quantity
-    ELSE 0.0
-    END
-    ),0.0),
-
-    COALESCE(
-    SUM(
-    CASE
-    WHEN LOWER(e.type)='usage'
-    THEN e.quantity
-    ELSE 0.0
-    END
-    ),0.0),
-
-    COALESCE(p.quantity,0.0),
-
-    COALESCE(
-    SUM(
-    CASE
-    WHEN LOWER(e.type)='purchase'
-    THEN e.quantity*COALESCE(e.price,0)
-    ELSE 0
-    END
-    ),0.0),
-
-    COALESCE(
-    SUM(
-    CASE
-    WHEN LOWER(e.type)='usage'
-    THEN e.quantity*COALESCE(e.price,0)
-    ELSE 0
-    END
-    ),0.0),
-
-    COALESCE(p.quantity,0.0)
-    *
-    COALESCE(p.price,0.0),
-
-    e.entryTime
+e.entryTime
 
 )
 
@@ -138,7 +102,6 @@ WHERE
 e.entryTime BETWEEN :start AND :end
 
 AND
-
 (
 e.deleted=false
 OR
@@ -148,7 +111,7 @@ e.deleted IS NULL
 GROUP BY
 
 p.name,
-p.quantity,
+p.openingQuantity,
 p.price,
 e.entryTime
 
@@ -176,114 +139,48 @@ SELECT new org.BalajiStore.Dto.ItemReportDto(
 
 p.name,
 
-COALESCE(p.quantity,0.0)
-
--
+0.0,
 
 COALESCE(
-SUM(
-CASE
-WHEN LOWER(e.type)='purchase'
-THEN e.quantity
-ELSE 0.0
-END
-),0.0)
-
-+
+CASE WHEN LOWER(e.type)='purchase' THEN e.quantity ELSE 0.0 END,0.0),
 
 COALESCE(
-SUM(
-CASE
-WHEN LOWER(e.type)='usage'
-THEN e.quantity
-ELSE 0.0
-END
-),0.0),
+CASE WHEN LOWER(e.type)='usage' THEN e.quantity ELSE 0.0 END,0.0),
+
+0.0,
 
 COALESCE(
-SUM(
-CASE
-WHEN LOWER(e.type)='purchase'
-THEN e.quantity
-ELSE 0.0
-END
-),0.0),
+CASE WHEN LOWER(e.type)='purchase'
+THEN e.quantity * COALESCE(e.price,0)
+ELSE 0.0 END,0.0),
 
 COALESCE(
-SUM(
-CASE
-WHEN LOWER(e.type)='usage'
-THEN e.quantity
-ELSE 0.0
-END
-),0.0),
+CASE WHEN LOWER(e.type)='usage'
+THEN e.quantity * COALESCE(e.price,0)
+ELSE 0.0 END,0.0),
 
-COALESCE(p.quantity,0.0),
-
-COALESCE(
-SUM(
-CASE
-WHEN LOWER(e.type)='purchase'
-THEN e.quantity*COALESCE(e.price,0)
-ELSE 0
-END
-),0.0),
-
-COALESCE(
-SUM(
-CASE
-WHEN LOWER(e.type)='usage'
-THEN e.quantity*COALESCE(e.price,0)
-ELSE 0
-END
-),0.0),
-
-COALESCE(p.quantity,0.0)
-*
-COALESCE(p.price,0.0),
+0.0,
 
 e.entryTime
 
 )
 
-FROM Product p
+FROM DailyEntry e
+JOIN Product p ON p.id = e.productId
 
-LEFT JOIN DailyEntry e
-ON p.id=e.productId
+WHERE LOWER(TRIM(p.name)) = LOWER(TRIM(:name))
 
-WHERE
+AND e.entryTime BETWEEN :startDate AND :endDate
 
-LOWER(TRIM(p.name))
-=
-LOWER(TRIM(:name))
+AND (e.deleted = false OR e.deleted IS NULL)
 
-AND
-
-(
-e.deleted=false
-OR
-e.deleted IS NULL
-)
-
-GROUP BY
-
-p.name,
-p.quantity,
-p.price,
-e.entryTime
-
-ORDER BY
-e.entryTime ASC
-
+ORDER BY e.entryTime ASC
 """)
     List<ItemReportDto> getItemDaywiseReport(
-
-            @Param("name")
-            String name
-
+            @Param("name") String name,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
     );
-
-
     // =========================
     // SUMMARY
     // =========================
@@ -338,7 +235,6 @@ WHERE
 e.entryTime BETWEEN :start AND :end
 
 AND
-
 (
 e.deleted=false
 OR
@@ -356,25 +252,60 @@ e.deleted IS NULL
 
     );
 
-
     // =========================
-    // NORMAL FETCHES
-    // =========================
+// STOCK MOVEMENT BEFORE DATE
+// =========================
 
-    List<DailyEntry>
-    findByEntryTime(
+    @Query("""
+SELECT
+COALESCE(
+SUM(
+CASE
+WHEN LOWER(e.type) = 'purchase'
+THEN e.quantity
+
+WHEN LOWER(e.type) = 'usage'
+THEN -e.quantity
+
+ELSE 0
+END
+),0
+)
+
+FROM DailyEntry e
+
+WHERE
+
+e.productId = :productId
+
+AND e.entryTime < :startDate
+
+AND
+(
+e.deleted = false
+OR
+e.deleted IS NULL
+)
+
+""")
+    Double getStockMovementBeforeDate(
+
+            @Param("productId")
+            Long productId,
+
+            @Param("startDate")
+            LocalDate startDate
+    );
+
+
+    List<DailyEntry> findByEntryTime(LocalDate date);
+
+    List<DailyEntry> findByEntryTimeAndDeletedFalse(
             LocalDate date
     );
 
-    List<DailyEntry>
-    findByEntryTimeAndDeletedFalse(
-            LocalDate date
-    );
+    List<DailyEntry> findByDeletedTrue();
 
-    List<DailyEntry>
-    findByDeletedTrue();
-
-    List<DailyEntry>
-    findByDeletedFalse();
+    List<DailyEntry> findByDeletedFalse();
 
 }

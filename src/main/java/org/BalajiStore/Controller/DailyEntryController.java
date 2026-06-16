@@ -20,6 +20,10 @@ public class DailyEntryController {
     @PostMapping
     public DailyEntry saveEntry(@RequestBody DailyEntry entry) {
 
+        if (entry.getProductId() == null || entry.getType() == null) {
+            throw new RuntimeException("Invalid entry data");
+        }
+
         return dailyEntryService.saveEntry(entry);
     }
 

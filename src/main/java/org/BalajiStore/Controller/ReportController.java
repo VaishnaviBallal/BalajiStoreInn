@@ -63,9 +63,11 @@ public class ReportController {
     ========================= */
     @GetMapping("/item/daywise")
     public List<ItemReportDto> getItemDaywiseReport(
-            @RequestParam String name) {
-
-        return reportService.getItemDaywiseReport(name);
+            @RequestParam String name,
+            @RequestParam String start,
+            @RequestParam String end
+    ) {
+        return reportService.getItemDaywiseReport(name, start, end);
     }
 
     /* =========================
@@ -73,15 +75,20 @@ public class ReportController {
     ========================= */
     @GetMapping("/item/daywise/pdf")
     public ResponseEntity<byte[]> downloadItemDaywisePdf(
-            @RequestParam String name) {
+            @RequestParam String name,
+            @RequestParam String start,
+            @RequestParam String end
+    ) {
 
         List<ItemReportDto> reports =
-                reportService.getItemDaywiseReport(name);
+                reportService.getItemDaywiseReport(name, start, end);
 
-        byte[] pdf = pdfService.generateItemDaywisePdf(reports);
+        byte[] pdf =
+                pdfService.generateItemDaywisePdf(reports);
 
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=item_daywise_report.pdf")
+                .header("Content-Disposition",
+                        "attachment; filename=item_daywise_report.pdf")
                 .header("Content-Type", "application/pdf")
                 .body(pdf);
     }

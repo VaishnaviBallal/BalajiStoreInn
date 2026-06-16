@@ -66,29 +66,27 @@ public class ReportPdfService {
             document.add(
                     new Paragraph(" ")
             );
-
-            Table table =
-                    new Table(9);
+            Table table = new Table(6);
 
             table.addCell("Date");
             table.addCell("Item");
-            table.addCell("Opening");
+
             table.addCell("Purchased");
             table.addCell("Used");
-            table.addCell("Closing");
+
             table.addCell("Purchase ₹");
             table.addCell("Usage ₹");
-            table.addCell("Stock Value ₹");
 
-            double totalOpening=0;
+
+
             double totalPurchased=0;
             double totalUsed=0;
-            double totalClosing=0;
+
             double totalPurchaseAmt=0;
             double totalUsageAmt=0;
-            double totalStockValue=0;
 
-            boolean firstRow=true;
+
+
 
             for(
                     ItemReportDto r
@@ -96,22 +94,14 @@ public class ReportPdfService {
                     reports
             ){
 
-                if(firstRow){
-
-                    totalOpening =
-                            r.getOpeningStock();
-
-                    firstRow=false;
-                }
-
+              
                 totalPurchased +=
                         r.getPurchased();
 
                 totalUsed +=
                         r.getUsed();
 
-                totalClosing =
-                        r.getClosingStock();
+
 
                 totalPurchaseAmt +=
                         r.getPurchaseAmount();
@@ -119,8 +109,7 @@ public class ReportPdfService {
                 totalUsageAmt +=
                         r.getUsageAmount();
 
-                totalStockValue =
-                        r.getStockValue();
+
 
                 table.addCell(
                         String.valueOf(
@@ -130,13 +119,6 @@ public class ReportPdfService {
 
                 table.addCell(
                         r.getItemName()
-                );
-
-                table.addCell(
-                        String.format(
-                                "%.2f",
-                                r.getOpeningStock()
-                        )
                 );
 
                 table.addCell(
@@ -154,13 +136,6 @@ public class ReportPdfService {
                 );
 
                 table.addCell(
-                        String.format(
-                                "%.2f",
-                                r.getClosingStock()
-                        )
-                );
-
-                table.addCell(
                         formatRs(
                                 r.getPurchaseAmount()
                         )
@@ -172,12 +147,6 @@ public class ReportPdfService {
                         )
                 );
 
-                table.addCell(
-                        formatRs(
-                                r.getStockValue()
-                        )
-                );
-
             }
 
             table.addCell(
@@ -185,14 +154,7 @@ public class ReportPdfService {
                             .setBold()
             );
 
-            table.addCell("-");
-
-            table.addCell(
-                    String.format(
-                            "%.2f",
-                            totalOpening
-                    )
-            );
+            table.addCell("ALL ITEMS");
 
             table.addCell(
                     String.format(
@@ -209,13 +171,6 @@ public class ReportPdfService {
             );
 
             table.addCell(
-                    String.format(
-                            "%.2f",
-                            totalClosing
-                    )
-            );
-
-            table.addCell(
                     formatRs(
                             totalPurchaseAmt
                     )
@@ -226,13 +181,6 @@ public class ReportPdfService {
                             totalUsageAmt
                     )
             );
-
-            table.addCell(
-                    formatRs(
-                            totalStockValue
-                    )
-            );
-
             document.add(table);
 
             document.close();
@@ -304,8 +252,9 @@ public class ReportPdfService {
                     new Paragraph(" ")
             );
 
+            // 9 columns same as screen
             Table table =
-                    new Table(8);
+                    new Table(9);
 
             table.addCell("Date");
             table.addCell("Item");
@@ -315,28 +264,26 @@ public class ReportPdfService {
             table.addCell("Closing");
             table.addCell("Purchase ₹");
             table.addCell("Usage ₹");
+            table.addCell("Stock Value ₹");
 
-            double totalOpening=0;
-            double totalPurchased=0;
-            double totalUsed=0;
-            double totalClosing=0;
-            double totalPurchaseAmt=0;
-            double totalUsageAmt=0;
+            double totalOpening = 0;
+            double totalPurchased = 0;
+            double totalUsed = 0;
+            double totalClosing = 0;
+            double totalPurchaseAmt = 0;
+            double totalUsageAmt = 0;
+            double totalStockValue = 0;
 
-            boolean firstRow=true;
+            boolean firstRow = true;
 
-            for(
-                    ItemReportDto r
-                    :
-                    reports
-            ){
+            for(ItemReportDto r : reports){
 
                 if(firstRow){
 
                     totalOpening =
                             r.getOpeningStock();
 
-                    firstRow=false;
+                    firstRow = false;
                 }
 
                 totalPurchased +=
@@ -353,6 +300,9 @@ public class ReportPdfService {
 
                 totalUsageAmt +=
                         r.getUsageAmount();
+
+                totalStockValue +=
+                        r.getStockValue();
 
                 table.addCell(
                         String.valueOf(
@@ -404,10 +354,16 @@ public class ReportPdfService {
                         )
                 );
 
+                table.addCell(
+                        formatRs(
+                                r.getStockValue()
+                        )
+                );
             }
 
+            // Closing Balance Row
             table.addCell(
-                    new Paragraph("TOTAL")
+                    new Paragraph("Closing Balance")
                             .setBold()
             );
 
@@ -450,6 +406,12 @@ public class ReportPdfService {
             table.addCell(
                     formatRs(
                             totalUsageAmt
+                    )
+            );
+
+            table.addCell(
+                    formatRs(
+                            totalStockValue
                     )
             );
 

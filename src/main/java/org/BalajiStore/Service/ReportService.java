@@ -1,14 +1,21 @@
 package org.BalajiStore.Service;
 
 import org.BalajiStore.Dto.ItemReportDto;
+import org.BalajiStore.Entity.Product;
 import org.BalajiStore.Repository.DailyEntryRepository;
+import org.BalajiStore.Repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
+
+
 @Service
 public class ReportService {
+    @Autowired
+    private ProductRepository productRepository;
 
     private final DailyEntryRepository repository;
 
@@ -43,167 +50,152 @@ public class ReportService {
     // ITEM SUMMARY
     // =========================
 
-    public ItemReportDto getItemByName(
-            String name
+    public ItemReportDto getItemSummary(
+            String name,
+            String start,
+            String end
     ) {
 
         List<ItemReportDto> list =
-                getItemDaywiseReport(
-                        name
-                );
+                getItemDaywiseReport(name, start, end);
 
-        if(
-                list == null ||
-                        list.isEmpty()
-        ){
+        double totalPurchased = 0;
+        double totalUsed = 0;
 
-            return new ItemReportDto(
+        for (ItemReportDto r : list) {
 
-                    name,
+            totalPurchased +=
+                    r.getPurchased() == null
+                            ? 0
+                            : r.getPurchased();
 
-                    0.0,
-
-                    0.0,
-
-                    0.0,
-
-                    0.0,
-
-                    0.0,
-
-                    0.0,
-
-                    0.0,
-
-                    null
-            );
+            totalUsed +=
+                    r.getUsed() == null
+                            ? 0
+                            : r.getUsed();
         }
 
-        // latest row
+        Product product =
+                productRepository.findByNameIgnoreCase(name);
 
-        return list.get(
-                list.size()-1
-        );
+        double opening = 0;
+
+        if (product != null) {
+
+            opening =
+                    product.getOpeningQuantity() == null
+                            ? 0
+                            : product.getOpeningQuantity();
+
+            LocalDate startDate =
+                    LocalDate.parse(start);
+
+            Double movement =
+                    repository.getStockMovementBeforeDate(
+                            product.getId(),
+                            startDate
+                    );
+
+            opening +=
+                    movement == null
+                            ? 0
+                            : movement;
+        }
+
+        double closing =
+                opening
+                        + totalPurchased
+                        - totalUsed;
+
+        ItemReportDto dto = new ItemReportDto();
+
+        dto.setItemName(name);
+        dto.setOpeningStock(opening);
+        dto.setPurchased(totalPurchased);
+        dto.setUsed(totalUsed);
+        dto.setClosingStock(closing);
+
+        return dto;
     }
 
     // =========================
     // DAYWISE REPORT
     // =========================
 
-    public List<ItemReportDto>
-    getItemDaywiseReport(
-            String name
+    public List<ItemReportDto> getItemDaywiseReport(
+            String name,
+            String start,
+            String end
     ) {
 
+        LocalDate startDate = LocalDate.parse(start);
+        LocalDate endDate = LocalDate.parse(end);
+
         List<ItemReportDto> list =
+                repository.getItemDaywiseReport(
+                        name.trim(),
+                        startDate,
+                        endDate
+                );
 
-                repository
-                        .getItemDaywiseReport(
-                                name.trim()
-                        );
+        Product product =
+                productRepository.findByNameIgnoreCase(name);
 
-        double runningStock = 0;
+        double openingStock = 0;
 
+        if (product != null) {
+
+            openingStock =
+                    product.getOpeningQuantity() == null
+                            ? 0
+                            : product.getOpeningQuantity();
+
+            Double movement =
+                    repository.getStockMovementBeforeDate(
+                            product.getId(),
+                            startDate
+                    );
+
+            openingStock +=
+                    movement == null
+                            ? 0
+                            : movement;
+        }
+
+        double runningStock = openingStock;
         double lastPrice = 0;
 
-        for(
-                ItemReportDto r
-                :
-                list
-        ){
+        for (ItemReportDto r : list) {
 
             double purchased =
-
-                    r.getPurchased()==null
-
-                            ?
-
-                            0
-
-                            :
-
-                            r.getPurchased();
+                    r.getPurchased() == null
+                            ? 0
+                            : r.getPurchased();
 
             double used =
+                    r.getUsed() == null
+                            ? 0
+                            : r.getUsed();
 
-                    r.getUsed()==null
-
-                            ?
-
-                            0
-
-                            :
-
-                            r.getUsed();
-
-            double purchaseAmount =
-
-                    r.getPurchaseAmount()==null
-
-                            ?
-
-                            0
-
-                            :
-
-                            r.getPurchaseAmount();
-
-            // Opening Stock
-
-            r.setOpeningStock(
-                    runningStock
-            );
-
-            // update latest price only when purchase exists
-
-            if(
-                    purchased > 0
-            ){
-
-                lastPrice =
-
-                        purchaseAmount
-
-                                /
-
-                                purchased;
-            }
-
-            // running stock
+            r.setOpeningStock(runningStock);
 
             runningStock =
-
                     runningStock
+                            + purchased
+                            - used;
 
-                            +
+            r.setClosingStock(runningStock);
 
-                            purchased
-
-                            -
-
-                            used;
-
-            // closing stock
-
-            r.setClosingStock(
-                    runningStock
-            );
-
-            // stock value
+            if (purchased > 0) {
+                lastPrice =
+                        r.getPurchaseAmount() / purchased;
+            }
 
             r.setStockValue(
-
-                    runningStock
-
-                            *
-
-                            lastPrice
-
+                    runningStock * lastPrice
             );
-
         }
 
         return list;
     }
-
 }

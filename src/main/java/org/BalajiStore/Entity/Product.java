@@ -9,74 +9,112 @@ import java.time.LocalDate;
 @Table(name = "products")
 public class Product {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // =========================
+    // BASIC INFO
+    // =========================
+    private String name;
+
+    private String unit;
+
+    // =========================
+    // STOCK INFO
+    // =========================
+    private Double quantity; // LIVE STOCK
+
+    @Column(name = "opening_quantity")
+    private Double openingQuantity; // INITIAL STOCK (NEVER CHANGE AFTER CREATE)
+
+    private Double price;
+
+    // =========================
+    // AUDIT
+    // =========================
     @Column(name = "created_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate createdDate;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String unit;
-    private String name;
+    public Product() {}
 
-    private Double quantity;
-
-    private Double price;
-
-    public Product() {
-    }
-
-    public Product(String name, Double quantity, double price,String unit) {
+    // =========================
+    // CONSTRUCTOR (SAFE INIT)
+    // =========================
+    public Product(String name, Double quantity, Double price, String unit) {
         this.name = name;
+        this.unit = unit;
         this.quantity = quantity;
         this.price = price;
-        this.unit=unit;
+
+        // opening stock fixed at creation time
+        this.openingQuantity = quantity;
+
+        this.createdDate = LocalDate.now();
     }
+
+    // =========================
+    // GETTERS
+    // =========================
 
     public Long getId() {
         return id;
-    }
-
-    public LocalDate getCreatedDate() {
-        return createdDate;
     }
 
     public String getName() {
         return name;
     }
 
+    public String getUnit() {
+        return unit;
+    }
+
     public Double getQuantity() {
         return quantity;
+    }
+
+    public Double getOpeningQuantity() {
+        return openingQuantity;
     }
 
     public Double getPrice() {
         return price;
     }
-    public  String getUnit(){
-        return  unit;
+
+    public LocalDate getCreatedDate() {
+        return createdDate;
     }
+
+    // =========================
+    // SETTERS
+    // =========================
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public void setCreatedDate(LocalDate createdDate) {
-        this.createdDate = createdDate;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
     public void setQuantity(Double quantity) {
         this.quantity = quantity;
     }
 
-    public void setPrice(double price) {
+    public void setOpeningQuantity(Double openingQuantity) {
+        this.openingQuantity = openingQuantity;
+    }
+
+    public void setPrice(Double price) {
         this.price = price;
     }
 
-    public void setUnit(String unit){
-        this.unit=unit;
+    public void setCreatedDate(LocalDate createdDate) {
+        this.createdDate = createdDate;
     }
 }

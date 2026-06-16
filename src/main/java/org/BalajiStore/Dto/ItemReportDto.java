@@ -1,7 +1,6 @@
 package org.BalajiStore.Dto;
 
-import
-        java.time.LocalDate;
+import java.time.LocalDate;
 
 public class ItemReportDto {
 
@@ -13,10 +12,9 @@ public class ItemReportDto {
     private Double purchaseAmount;
     private Double usageAmount;
     private Double stockValue;
-    private LocalDate date; // ✅ important
+    private LocalDate date;
 
-    public ItemReportDto() {
-    }
+    public ItemReportDto() {}
 
     public ItemReportDto(String itemName,
                          Double openingStock,
@@ -39,18 +37,49 @@ public class ItemReportDto {
         this.date = date;
     }
 
-    public LocalDate getDate() { return date; }
-    public String getItemName() { return itemName; }
-    public Double getOpeningStock() { return openingStock; }
-    public Double getPurchased() { return purchased; }
-    public Double getUsed() { return used; }
-    public Double getClosingStock() { return closingStock; }
-    public Double getPurchaseAmount() { return purchaseAmount; }
-    public Double getUsageAmount() { return usageAmount; }
-    public Double getStockValue() { return stockValue;
+    // =========================
+    // GETTERS
+    // =========================
+
+    public String getItemName() {
+        return itemName;
     }
 
+    public Double getOpeningStock() {
+        return openingStock;
+    }
 
+    public Double getPurchased() {
+        return purchased;
+    }
+
+    public Double getUsed() {
+        return used;
+    }
+
+    public Double getClosingStock() {
+        return closingStock;
+    }
+
+    public Double getPurchaseAmount() {
+        return purchaseAmount;
+    }
+
+    public Double getUsageAmount() {
+        return usageAmount;
+    }
+
+    public Double getStockValue() {
+        return stockValue;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    // =========================
+    // SETTERS (FULL FIX)
+    // =========================
 
     public void setItemName(String itemName) {
         this.itemName = itemName;
@@ -72,7 +101,19 @@ public class ItemReportDto {
         this.closingStock = closingStock;
     }
 
-    public void setStockValue(Double stockValue){
+    public void setPurchaseAmount(Double purchaseAmount) {
+        this.purchaseAmount = purchaseAmount;
+    }
+
+    public void setUsageAmount(Double usageAmount) {
+        this.usageAmount = usageAmount;
+    }
+
+    public void setStockValue(Double stockValue) {
         this.stockValue = stockValue;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 }

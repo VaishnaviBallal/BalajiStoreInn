@@ -20,7 +20,7 @@ public class DailyEntryService {
     private ProductRepository productRepository;
 
     // =========================
-    // SAVE ENTRY (FIXED)
+    // SAVE ENTRY
     // =========================
     public DailyEntry saveEntry(DailyEntry entry) {
 
@@ -28,46 +28,119 @@ public class DailyEntryService {
             entry.setEntryTime(LocalDate.now());
         }
 
-        // ✅ MUST USE productId (NOT NAME)
         Product product = productRepository.findById(entry.getProductId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Product not found with id: " + entry.getProductId()
-                ));
+                .orElseThrow(() ->
+                        new RuntimeException("Product not found with id: " + entry.getProductId())
+                );
 
-        Double currentQty = product.getQuantity();
+        double currentQty =
+                product.getQuantity() == null ? 0.0 : product.getQuantity();
 
-        // store name for UI/report only
-        entry.setItemName(product.getName());
-
+        // =========================
+        // PURCHASE
+        // =========================
         if (entry.getType().equalsIgnoreCase("purchase")) {
 
-            product.setQuantity(currentQty + entry.getQuantity());
+            double updatedQty = currentQty + entry.getQuantity();
 
-            // update product price on purchase
+            product.setQuantity(updatedQty);
+
+            // keep latest purchase price as reference
             product.setPrice(entry.getPrice());
 
-        } else if (entry.getType().equalsIgnoreCase("usage")) {
+        }
+
+        // =========================
+        // USAGE
+        // =========================
+        else if (entry.getType().equalsIgnoreCase("usage")) {
 
             if (currentQty < entry.getQuantity()) {
                 throw new RuntimeException("Not enough stock available");
             }
 
-            product.setQuantity(currentQty - entry.getQuantity());
+            double updatedQty = currentQty - entry.getQuantity();
 
-            // usage uses product price
+            product.setQuantity(updatedQty);
+
+            // usage uses product price (snapshot not needed here)
             entry.setPrice(product.getPrice());
-        }
-
-        // calculate total
-        if (entry.getQuantity() != null && entry.getPrice() != null) {
-            entry.setTotalPrice(entry.getQuantity() * entry.getPrice());
-        } else {
-            entry.setTotalPrice(0.0);
         }
 
         productRepository.save(product);
 
         return entryRepository.save(entry);
+    }
+
+    // =========================
+    // UPDATE ENTRY
+    // =========================
+    public DailyEntry updateEntry(Long id, DailyEntry newEntry) {
+
+        DailyEntry oldEntry = entryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Entry not found"));
+
+        Product product = productRepository.findById(newEntry.getProductId())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        double qty = product.getQuantity();
+
+        // REMOVE OLD EFFECT
+        if (oldEntry.getType().equalsIgnoreCase("purchase")) {
+            qty -= oldEntry.getQuantity();
+        } else {
+            qty += oldEntry.getQuantity();
+        }
+
+        // APPLY NEW EFFECT
+        if (newEntry.getType().equalsIgnoreCase("purchase")) {
+            qty += newEntry.getQuantity();
+        } else {
+            qty -= newEntry.getQuantity();
+        }
+
+        if (qty < 0) {
+            throw new RuntimeException("Insufficient stock after update");
+        }
+
+        product.setQuantity(qty);
+
+        productRepository.save(product);
+
+        oldEntry.setProductId(product.getId());
+        oldEntry.setType(newEntry.getType());
+        oldEntry.setQuantity(newEntry.getQuantity());
+        oldEntry.setPrice(newEntry.getPrice());
+        oldEntry.setEntryTime(newEntry.getEntryTime());
+
+        return entryRepository.save(oldEntry);
+    }
+
+    // =========================
+    // DELETE ENTRY (SOFT DELETE)
+    // =========================
+    public void deleteEntry(Long id) {
+
+        DailyEntry entry = entryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Entry not found"));
+
+        Product product = productRepository.findById(entry.getProductId())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        double qty = product.getQuantity();
+
+        if (entry.getType().equalsIgnoreCase("purchase")) {
+            qty -= entry.getQuantity();
+        } else {
+            qty += entry.getQuantity();
+        }
+
+        product.setQuantity(qty);
+
+        entry.setDeleted(true);
+
+        productRepository.save(product);
+        entryRepository.save(entry);
     }
 
     // =========================
@@ -78,80 +151,30 @@ public class DailyEntryService {
     }
 
     // =========================
-    // SOFT DELETE
-    // =========================
-    public void deleteEntry(Long id) {
-
-        DailyEntry entry = entryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Entry not found"));
-
-        entry.setDeleted(true);
-        entryRepository.save(entry);
-    }
-
-    // =========================
     // GET BY DATE
     // =========================
     public List<DailyEntry> getEntriesByDate(String date) {
-
-        LocalDate selectedDate =
-                LocalDate.parse(date);
-
-        return entryRepository
-                .findByEntryTimeAndDeletedFalse(
-                        selectedDate
-                );
-
+        return entryRepository.findByEntryTimeAndDeletedFalse(LocalDate.parse(date));
     }
 
     // =========================
     // GET ALL
     // =========================
     public List<DailyEntry> getAll() {
-
-        return entryRepository
-                .findByDeletedFalse();
-
+        return entryRepository.findByDeletedFalse();
     }
 
     // =========================
-    // UPDATE ENTRY (FIXED)
-    // =========================
-    public DailyEntry updateEntry(Long id, DailyEntry entry) {
-
-        DailyEntry existing = entryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Entry not found"));
-
-        Product product = productRepository.findById(entry.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
-        existing.setProductId(product.getId());
-        existing.setItemName(product.getName());
-
-        existing.setType(entry.getType());
-        existing.setQuantity(entry.getQuantity());
-        existing.setPrice(entry.getPrice());
-
-        if (entry.getEntryTime() != null) {
-            existing.setEntryTime(entry.getEntryTime());
-        }
-
-        if (existing.getQuantity() != null && existing.getPrice() != null) {
-            existing.setTotalPrice(existing.getQuantity() * existing.getPrice());
-        }
-
-        return entryRepository.save(existing);
-    }
-
-    // =========================
-    // BIN / RESTORE
+    // BIN
     // =========================
     public List<DailyEntry> getBinEntries() {
         return entryRepository.findByDeletedTrue();
     }
 
+    // =========================
+    // RESTORE
+    // =========================
     public void restoreEntry(Long id) {
-
         DailyEntry entry = entryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Not found"));
 
@@ -159,12 +182,10 @@ public class DailyEntryService {
         entryRepository.save(entry);
     }
 
+    // =========================
+    // PERMANENT DELETE
+    // =========================
     public void deletePermanently(Long id) {
-
-        if (entryRepository.existsById(id)) {
-            entryRepository.deleteById(id);
-        } else {
-            throw new RuntimeException("Entry not found");
-        }
+        entryRepository.deleteById(id);
     }
 }

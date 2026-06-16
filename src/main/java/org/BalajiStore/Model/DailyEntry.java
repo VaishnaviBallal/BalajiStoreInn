@@ -12,46 +12,42 @@ public class DailyEntry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ✅ NEW: link with Product table (IMPORTANT FIX)
-    @Column(name = "product_id")
+    // =====================
+    // PRODUCT REFERENCE
+    // =====================
+    @Column(name = "product_id", nullable = false)
     private Long productId;
 
-    @Column(name = "item_name")
-    private String itemName; // optional (for display only)
-
-    @Column(name = "quantity")
+    // =====================
+    // TRANSACTION DATA
+    // =====================
+    @Column(name = "quantity", nullable = false)
     private Double quantity;
 
-    @Column(name = "type")
-    private String type;
+    @Column(name = "type", nullable = false)
+    private String type; // purchase / usage
 
     @Column(name = "price")
-    private Double price;
+    private Double price; // per unit price at time of entry
 
-    @Column(name = "total_price")
-    private Double totalPrice;
-
+    // =====================
+    // ENTRY DATE
+    // =====================
     @Column(name = "entry_time")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate entryTime;
 
+    // =====================
+    // SOFT DELETE FLAG
+    // =====================
     @Column(name = "deleted")
     private Boolean deleted = false;
 
     public DailyEntry() {}
 
-    // Auto calculate total price
-    @PrePersist
-    @PreUpdate
-    public void calculateTotalPrice() {
-        if (quantity != null && price != null) {
-            this.totalPrice = quantity * price;
-        } else {
-            this.totalPrice = 0.0;
-        }
-    }
-
-    // ================= GETTERS =================
+    // =====================
+    // GETTERS
+    // =====================
 
     public Long getId() {
         return id;
@@ -59,10 +55,6 @@ public class DailyEntry {
 
     public Long getProductId() {
         return productId;
-    }
-
-    public String getItemName() {
-        return itemName;
     }
 
     public Double getQuantity() {
@@ -73,26 +65,21 @@ public class DailyEntry {
         return type;
     }
 
-    public LocalDate getEntryTime() {
-        return entryTime;
-    }
-
     public Double getPrice() {
         return price;
     }
 
-    public Double getTotalPrice() {
-        if (totalPrice == null && quantity != null && price != null) {
-            return quantity * price;
-        }
-        return totalPrice;
+    public LocalDate getEntryTime() {
+        return entryTime;
     }
 
-    public Boolean isDeleted() {
+    public Boolean getDeleted() {
         return deleted;
     }
 
-    // ================= SETTERS =================
+    // =====================
+    // SETTERS
+    // =====================
 
     public void setId(Long id) {
         this.id = id;
@@ -100,10 +87,6 @@ public class DailyEntry {
 
     public void setProductId(Long productId) {
         this.productId = productId;
-    }
-
-    public void setItemName(String itemName) {
-        this.itemName = itemName;
     }
 
     public void setQuantity(Double quantity) {
@@ -114,16 +97,12 @@ public class DailyEntry {
         this.type = type;
     }
 
-    public void setEntryTime(LocalDate entryTime) {
-        this.entryTime = entryTime;
-    }
-
     public void setPrice(Double price) {
         this.price = price;
     }
 
-    public void setTotalPrice(Double totalPrice) {
-        this.totalPrice = totalPrice;
+    public void setEntryTime(LocalDate entryTime) {
+        this.entryTime = entryTime;
     }
 
     public void setDeleted(Boolean deleted) {
