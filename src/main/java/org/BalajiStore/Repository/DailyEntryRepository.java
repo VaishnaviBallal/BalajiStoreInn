@@ -297,6 +297,70 @@ e.deleted IS NULL
             LocalDate startDate
     );
 
+    @Query("""
+SELECT new org.BalajiStore.Dto.ItemReportDto(
+
+p.name,
+
+COALESCE(p.openingQuantity,0.0),
+
+COALESCE(SUM(
+CASE WHEN LOWER(e.type)='purchase'
+THEN e.quantity ELSE 0 END
+),0),
+
+COALESCE(SUM(
+CASE WHEN LOWER(e.type)='usage'
+THEN e.quantity ELSE 0 END
+),0),
+
+COALESCE(p.openingQuantity,0.0)
++
+COALESCE(SUM(
+CASE WHEN LOWER(e.type)='purchase'
+THEN e.quantity ELSE 0 END
+),0)
+-
+COALESCE(SUM(
+CASE WHEN LOWER(e.type)='usage'
+THEN e.quantity ELSE 0 END
+),0),
+
+COALESCE(SUM(
+CASE WHEN LOWER(e.type)='purchase'
+THEN e.quantity * COALESCE(e.price,0)
+ELSE 0 END
+),0),
+
+COALESCE(SUM(
+CASE WHEN LOWER(e.type)='usage'
+THEN e.quantity * COALESCE(e.price,0)
+ELSE 0 END
+),0),
+
+0.0,
+
+NULL
+
+)
+
+FROM Product p
+
+LEFT JOIN DailyEntry e
+ON p.id = e.productId
+AND e.entryTime BETWEEN :start AND :end
+AND (e.deleted = false OR e.deleted IS NULL)
+
+GROUP BY p.name, p.openingQuantity
+
+ORDER BY p.name
+""")
+    List<ItemReportDto> getItemSummaryReport(
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
+    );
+
+
 
     List<DailyEntry> findByEntryTime(LocalDate date);
 

@@ -33,168 +33,81 @@ public class ReportPdfService {
        MONTHLY REPORT PDF
     ========================= */
 
-    public byte[] generatePdf(
-            List<ItemReportDto> reports
-    ){
+    public byte[] generatePdf(List<ItemReportDto> reports){
 
-        ByteArrayOutputStream out =
-                new ByteArrayOutputStream();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         try{
 
-            PdfWriter writer =
-                    new PdfWriter(out);
+            PdfWriter writer = new PdfWriter(out);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
 
-            PdfDocument pdf =
-                    new PdfDocument(writer);
-
-            Document document =
-                    new Document(pdf);
-
+            // ✅ TITLE
             document.add(
-
-                    new Paragraph(
-                            "Balaji Store Report"
-                    )
-
+                    new Paragraph("Balaji Store Summary Report")
                             .setBold()
-
                             .setFontSize(16)
-
             );
 
-            document.add(
-                    new Paragraph(" ")
-            );
-            Table table = new Table(6);
+            document.add(new Paragraph(" "));
 
-            table.addCell("Date");
+            // ✅ 7 columns (updated)
+            Table table = new Table(7);
+
             table.addCell("Item");
-
             table.addCell("Purchased");
             table.addCell("Used");
-
             table.addCell("Purchase ₹");
             table.addCell("Usage ₹");
+            table.addCell("Closing Stock");
+            table.addCell("Stock Value ₹");
 
+            double totalPurchased = 0;
+            double totalUsed = 0;
+            double totalPurchaseAmt = 0;
+            double totalUsageAmt = 0;
+            double totalClosing = 0;
+            double totalStockValue = 0;
 
+            for(ItemReportDto r : reports){
 
-            double totalPurchased=0;
-            double totalUsed=0;
+                totalPurchased += r.getPurchased();
+                totalUsed += r.getUsed();
+                totalPurchaseAmt += r.getPurchaseAmount();
+                totalUsageAmt += r.getUsageAmount();
+                totalClosing += r.getClosingStock();
+                totalStockValue += r.getStockValue();
 
-            double totalPurchaseAmt=0;
-            double totalUsageAmt=0;
+                table.addCell(r.getItemName());
 
+                table.addCell(String.format("%.2f", r.getPurchased()));
+                table.addCell(String.format("%.2f", r.getUsed()));
 
+                table.addCell(formatRs(r.getPurchaseAmount()));
+                table.addCell(formatRs(r.getUsageAmount()));
 
-
-            for(
-                    ItemReportDto r
-                    :
-                    reports
-            ){
-
-              
-                totalPurchased +=
-                        r.getPurchased();
-
-                totalUsed +=
-                        r.getUsed();
-
-
-
-                totalPurchaseAmt +=
-                        r.getPurchaseAmount();
-
-                totalUsageAmt +=
-                        r.getUsageAmount();
-
-
-
-                table.addCell(
-                        String.valueOf(
-                                r.getDate()
-                        )
-                );
-
-                table.addCell(
-                        r.getItemName()
-                );
-
-                table.addCell(
-                        String.format(
-                                "%.2f",
-                                r.getPurchased()
-                        )
-                );
-
-                table.addCell(
-                        String.format(
-                                "%.2f",
-                                r.getUsed()
-                        )
-                );
-
-                table.addCell(
-                        formatRs(
-                                r.getPurchaseAmount()
-                        )
-                );
-
-                table.addCell(
-                        formatRs(
-                                r.getUsageAmount()
-                        )
-                );
-
+                table.addCell(String.format("%.2f", r.getClosingStock()));
+                table.addCell(formatRs(r.getStockValue()));
             }
 
-            table.addCell(
-                    new Paragraph("TOTAL")
-                            .setBold()
-            );
+            // ✅ TOTAL ROW
+            table.addCell(new Paragraph("TOTAL").setBold());
+            table.addCell(String.format("%.2f", totalPurchased));
+            table.addCell(String.format("%.2f", totalUsed));
+            table.addCell(formatRs(totalPurchaseAmt));
+            table.addCell(formatRs(totalUsageAmt));
+            table.addCell(String.format("%.2f", totalClosing));
+            table.addCell(formatRs(totalStockValue));
 
-            table.addCell("ALL ITEMS");
-
-            table.addCell(
-                    String.format(
-                            "%.2f",
-                            totalPurchased
-                    )
-            );
-
-            table.addCell(
-                    String.format(
-                            "%.2f",
-                            totalUsed
-                    )
-            );
-
-            table.addCell(
-                    formatRs(
-                            totalPurchaseAmt
-                    )
-            );
-
-            table.addCell(
-                    formatRs(
-                            totalUsageAmt
-                    )
-            );
             document.add(table);
-
             document.close();
 
-        }
-
-        catch(Exception e){
-
+        } catch(Exception e){
             e.printStackTrace();
-
         }
 
         return out.toByteArray();
-
     }
 
     /* =========================

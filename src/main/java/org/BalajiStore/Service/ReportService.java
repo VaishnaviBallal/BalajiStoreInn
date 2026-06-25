@@ -198,4 +198,27 @@ public class ReportService {
 
         return list;
     }
+    public List<ItemReportDto> getSummaryReport(String start, String end) {
+
+        List<ItemReportDto> list = repository.getItemSummaryReport(
+                LocalDate.parse(start),
+                LocalDate.parse(end)
+        );
+
+        // ✅ ADD THIS BLOCK HERE
+        for (ItemReportDto r : list) {
+
+            double closing = r.getClosingStock() == null ? 0 : r.getClosingStock();
+            double purchaseAmt = r.getPurchaseAmount() == null ? 0 : r.getPurchaseAmount();
+            double purchasedQty = r.getPurchased() == null ? 0 : r.getPurchased();
+
+            double avgPrice = purchasedQty > 0
+                    ? purchaseAmt / purchasedQty
+                    : 0;
+
+            r.setStockValue(closing * avgPrice);
+        }
+
+        return list;
+    }
 }

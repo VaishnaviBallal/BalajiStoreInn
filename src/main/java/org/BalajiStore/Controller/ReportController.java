@@ -92,4 +92,13 @@ public class ReportController {
                 .header("Content-Type", "application/pdf")
                 .body(pdf);
     }
+
+    @GetMapping("/item/summary")
+    public List<ItemReportDto> getSummaryReport(
+            @RequestParam String start,
+            @RequestParam String end) {
+
+        return reportService.getSummaryReport(start, end);
+    }
+
 }
