@@ -33,7 +33,7 @@ public class ReportPdfService {
        MONTHLY REPORT PDF
     ========================= */
 
-    public byte[] generatePdf(List<ItemReportDto> reports){
+    public byte[] generatePdf(List<ItemReportDto> reports, String start, String end){
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -50,7 +50,15 @@ public class ReportPdfService {
                             .setFontSize(16)
             );
 
+// ✅ ADD THIS
+            document.add(
+                    new Paragraph(
+                            "From " + start + " - " + end
+                    ).setFontSize(12)
+            );
+
             document.add(new Paragraph(" "));
+
 
             // ✅ 7 columns (updated)
             Table table = new Table(7);

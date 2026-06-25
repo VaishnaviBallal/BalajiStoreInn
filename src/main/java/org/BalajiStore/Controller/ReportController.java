@@ -45,7 +45,7 @@ public class ReportController {
         List<ItemReportDto> reports =
                 reportService.getSummaryReport(start, end); // ✅ CORRECT ✅
 
-        byte[] pdf = pdfService.generatePdf(reports);
+        byte[] pdf = pdfService.generatePdf(reports, start, end);
 
         return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment; filename=store_report.pdf")
