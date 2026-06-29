@@ -37,6 +37,9 @@ public class Product {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate createdDate;
 
+    @Column(name = "opening_price")
+    private Double openingPrice;
+
     public Product() {}
 
     // =========================
@@ -47,11 +50,13 @@ public class Product {
         this.unit = unit;
         this.quantity = quantity;
         this.price = price;
+        this.openingPrice = price;
 
         // opening stock fixed at creation time
         this.openingQuantity = quantity;
 
         this.createdDate = LocalDate.now();
+
     }
 
     // =========================
@@ -85,6 +90,9 @@ public class Product {
     public LocalDate getCreatedDate() {
         return createdDate;
     }
+    public Double getOpeningPrice() {
+        return openingPrice;
+    }
 
     // =========================
     // SETTERS
@@ -116,5 +124,8 @@ public class Product {
 
     public void setCreatedDate(LocalDate createdDate) {
         this.createdDate = createdDate;
+    }
+    public void setOpeningPrice(Double openingPrice) {
+        this.openingPrice = openingPrice;
     }
 }

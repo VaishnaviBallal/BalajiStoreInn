@@ -43,7 +43,7 @@ public class ReportController {
             @RequestParam String end) {
 
         List<ItemReportDto> reports =
-                reportService.getSummaryReport(start, end); // ✅ CORRECT ✅
+                reportService.getSummaryReport(start, end);
 
         byte[] pdf = pdfService.generatePdf(reports, start, end);
 

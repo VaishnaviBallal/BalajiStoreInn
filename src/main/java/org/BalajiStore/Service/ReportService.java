@@ -40,10 +40,23 @@ public class ReportService {
         LocalDate endDate =
                 LocalDate.parse(end);
 
-        return repository.getItemReport(
-                startDate,
-                endDate
-        );
+        List<ItemReportDto> list =
+                repository.getItemReport(startDate, endDate);
+
+        for (ItemReportDto r : list) {
+
+            Product product =
+                    productRepository.findByNameIgnoreCase(r.getItemName());
+
+            if (product != null) {
+
+                r.setStockValue(
+                        r.getClosingStock() * product.getPrice()
+                );
+            }
+        }
+
+        return list;
     }
 
     // =========================
@@ -163,7 +176,7 @@ public class ReportService {
         }
 
         double runningStock = openingStock;
-        double lastPrice = 0;
+
 
         for (ItemReportDto r : list) {
 
@@ -186,13 +199,10 @@ public class ReportService {
 
             r.setClosingStock(runningStock);
 
-            if (purchased > 0) {
-                lastPrice =
-                        r.getPurchaseAmount() / purchased;
-            }
+
 
             r.setStockValue(
-                    runningStock * lastPrice
+                    runningStock * product.getPrice()
             );
         }
 
@@ -209,14 +219,20 @@ public class ReportService {
         for (ItemReportDto r : list) {
 
             double closing = r.getClosingStock() == null ? 0 : r.getClosingStock();
-            double purchaseAmt = r.getPurchaseAmount() == null ? 0 : r.getPurchaseAmount();
-            double purchasedQty = r.getPurchased() == null ? 0 : r.getPurchased();
 
-            double avgPrice = purchasedQty > 0
-                    ? purchaseAmt / purchasedQty
-                    : 0;
 
-            r.setStockValue(closing * avgPrice);
+            Product product =
+                    productRepository.findByNameIgnoreCase(
+                            r.getItemName());
+
+            double price =
+                    product == null
+                            ? 0
+                            : product.getPrice();
+
+            r.setStockValue(
+                    r.getClosingStock() * price
+            );
         }
 
         return list;

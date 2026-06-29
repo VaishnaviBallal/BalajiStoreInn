@@ -41,12 +41,31 @@ public class DailyEntryService {
         // =========================
         if (entry.getType().equalsIgnoreCase("purchase")) {
 
-            double updatedQty = currentQty + entry.getQuantity();
+            double purchaseQty = entry.getQuantity();
 
-            product.setQuantity(updatedQty);
+            double purchasePrice = entry.getPrice();
 
-            // keep latest purchase price as reference
-            product.setPrice(entry.getPrice());
+            double currentPrice =
+                    product.getPrice() == null
+                            ? product.getOpeningPrice()
+                            : product.getPrice();
+
+            double currentValue =
+                    currentQty * currentPrice;
+
+            double purchaseValue =
+                    purchaseQty * purchasePrice;
+
+            double newQty =
+                    currentQty + purchaseQty;
+
+            double newAveragePrice =
+                    newQty == 0
+                            ? 0
+                            : (currentValue + purchaseValue) / newQty;
+            product.setQuantity(newQty);
+
+            product.setPrice(newAveragePrice);
 
         }
 
@@ -67,9 +86,11 @@ public class DailyEntryService {
             entry.setPrice(product.getPrice());
         }
 
-        productRepository.save(product);
+        DailyEntry saved = entryRepository.save(entry);
 
-        return entryRepository.save(entry);
+        recalculateProduct(product.getId());
+
+        return saved;
     }
 
     // =========================
@@ -83,29 +104,7 @@ public class DailyEntryService {
         Product product = productRepository.findById(newEntry.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        double qty = product.getQuantity();
 
-        // REMOVE OLD EFFECT
-        if (oldEntry.getType().equalsIgnoreCase("purchase")) {
-            qty -= oldEntry.getQuantity();
-        } else {
-            qty += oldEntry.getQuantity();
-        }
-
-        // APPLY NEW EFFECT
-        if (newEntry.getType().equalsIgnoreCase("purchase")) {
-            qty += newEntry.getQuantity();
-        } else {
-            qty -= newEntry.getQuantity();
-        }
-
-        if (qty < 0) {
-            throw new RuntimeException("Insufficient stock after update");
-        }
-
-        product.setQuantity(qty);
-
-        productRepository.save(product);
 
         oldEntry.setProductId(product.getId());
         oldEntry.setType(newEntry.getType());
@@ -113,7 +112,11 @@ public class DailyEntryService {
         oldEntry.setPrice(newEntry.getPrice());
         oldEntry.setEntryTime(newEntry.getEntryTime());
 
-        return entryRepository.save(oldEntry);
+        DailyEntry saved = entryRepository.save(oldEntry);
+
+        recalculateProduct(product.getId());
+
+        return saved;
     }
 
     // =========================
@@ -127,20 +130,11 @@ public class DailyEntryService {
         Product product = productRepository.findById(entry.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        double qty = product.getQuantity();
-
-        if (entry.getType().equalsIgnoreCase("purchase")) {
-            qty -= entry.getQuantity();
-        } else {
-            qty += entry.getQuantity();
-        }
-
-        product.setQuantity(qty);
-
         entry.setDeleted(true);
 
-        productRepository.save(product);
         entryRepository.save(entry);
+
+        recalculateProduct(product.getId());
     }
 
     // =========================
@@ -179,13 +173,72 @@ public class DailyEntryService {
                 .orElseThrow(() -> new RuntimeException("Not found"));
 
         entry.setDeleted(false);
+
         entryRepository.save(entry);
+
+        recalculateProduct(entry.getProductId());
     }
 
     // =========================
     // PERMANENT DELETE
     // =========================
     public void deletePermanently(Long id) {
-        entryRepository.deleteById(id);
+
+        DailyEntry entry = entryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Entry not found"));
+
+        Long productId = entry.getProductId();
+
+        entryRepository.delete(entry);
+
+        recalculateProduct(productId);
+    }
+
+    private void recalculateProduct(Long productId) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        double qty = product.getOpeningQuantity() == null
+                ? 0
+                : product.getOpeningQuantity();
+
+        double avgPrice = product.getOpeningPrice() == null
+                ? 0
+                : product.getOpeningPrice();
+
+        List<DailyEntry> entries =
+                entryRepository.findByProductIdAndDeletedFalseOrderByEntryTimeAscIdAsc(productId);
+
+        for (DailyEntry entry : entries) {
+
+            if (entry.getType().equalsIgnoreCase("purchase")) {
+
+                double purchaseQty = entry.getQuantity();
+                double purchasePrice = entry.getPrice();
+
+                double currentValue = qty * avgPrice;
+                double purchaseValue = purchaseQty * purchasePrice;
+
+                qty += purchaseQty;
+
+                avgPrice = qty == 0
+                        ? 0
+                        : (currentValue + purchaseValue) / qty;
+
+            } else if (entry.getType().equalsIgnoreCase("usage")) {
+
+                qty -= entry.getQuantity();
+
+                if (qty < 0) {
+                    qty = 0;
+                }
+            }
+        }
+
+        product.setQuantity(qty);
+        product.setPrice(avgPrice);
+
+        productRepository.save(product);
     }
 }

@@ -25,7 +25,10 @@ public class ProductService {
 
         // ONLY set opening stock ON FIRST CREATE
         if (product.getId() == null) {
+
             product.setOpeningQuantity(product.getQuantity());
+
+            product.setOpeningPrice(product.getPrice());
         }
 
         return productRepository.save(product);
@@ -60,6 +63,7 @@ public class ProductService {
             existingProduct.setPrice(product.getPrice());
             existingProduct.setQuantity(product.getQuantity());
             existingProduct.setOpeningQuantity(product.getOpeningQuantity());
+            existingProduct.setOpeningPrice(product.getOpeningPrice());
 
             // ⚠️ IMPORTANT:
             // DO NOT overwrite quantity manually here

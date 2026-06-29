@@ -13,6 +13,7 @@ public class ItemReportDto {
     private Double usageAmount;
     private Double stockValue;
     private LocalDate date;
+    private Double averagePrice;
 
     public ItemReportDto() {}
 
@@ -24,6 +25,7 @@ public class ItemReportDto {
                          Double purchaseAmount,
                          Double usageAmount,
                          Double stockValue,
+                         Double averagePrice,
                          LocalDate date) {
 
         this.itemName = itemName;
@@ -35,6 +37,7 @@ public class ItemReportDto {
         this.usageAmount = usageAmount;
         this.stockValue = stockValue;
         this.date = date;
+        this.averagePrice=averagePrice;
     }
 
     // =========================
@@ -77,6 +80,10 @@ public class ItemReportDto {
         return date;
     }
 
+    public Double getAveragePrice(){
+        return averagePrice;
+    }
+
     // =========================
     // SETTERS (FULL FIX)
     // =========================
@@ -115,5 +122,8 @@ public class ItemReportDto {
 
     public void setDate(LocalDate date) {
         this.date = date;
+    }
+    public void setAveragePrice(Double averagePrice){
+        this.averagePrice=averagePrice;
     }
 }

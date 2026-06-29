@@ -371,5 +371,14 @@ ORDER BY p.name
     List<DailyEntry> findByDeletedTrue();
 
     List<DailyEntry> findByDeletedFalse();
+    List<DailyEntry> findByProductIdAndEntryTimeBetweenAndDeletedFalseOrderByEntryTimeAsc(
+            Long productId,
+            LocalDate startDate,
+            LocalDate endDate
+    );
+    List<DailyEntry> findByProductIdAndDeletedFalseOrderByEntryTimeAscIdAsc(
+            Long productId
+    );
+
 
 }
