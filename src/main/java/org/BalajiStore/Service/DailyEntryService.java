@@ -84,6 +84,7 @@ public class DailyEntryService {
 
             // usage uses product price (snapshot not needed here)
             entry.setPrice(product.getPrice());
+
         }
 
         DailyEntry saved = entryRepository.save(entry);
@@ -91,6 +92,7 @@ public class DailyEntryService {
         recalculateProduct(product.getId());
 
         return saved;
+
     }
 
     // =========================
@@ -234,11 +236,16 @@ public class DailyEntryService {
                     qty = 0;
                 }
             }
+            System.out.println(
+                    entry.getType() + " Qty=" + entry.getQuantity() + " Price=" + entry.getPrice()
+            );
         }
 
         product.setQuantity(qty);
         product.setPrice(avgPrice);
 
         productRepository.save(product);
+        System.out.println("Final Qty = " + qty);
+        System.out.println("Final Avg Price = " + avgPrice);
     }
 }
