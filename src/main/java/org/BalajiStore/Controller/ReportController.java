@@ -6,6 +6,8 @@ import org.BalajiStore.Service.ReportService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 @RestController
@@ -65,10 +67,17 @@ public class ReportController {
     @GetMapping("/item/daywise")
     public List<ItemReportDto> getItemDaywiseReport(
             @RequestParam String name,
-            @RequestParam String start,
-            @RequestParam String end
+            @RequestParam String month
     ) {
-        return reportService.getItemDaywiseReport(name, start, end);
+
+        LocalDate firstDay = YearMonth.parse(month).atDay(1);
+        LocalDate lastDay = YearMonth.parse(month).atEndOfMonth();
+
+        return reportService.getItemDaywiseReport(
+                name,
+                firstDay.toString(),
+                lastDay.toString()
+        );
     }
 
     /* =========================

@@ -160,6 +160,7 @@ THEN e.quantity * COALESCE(e.price,0)
 ELSE 0.0 END,0.0),
 
 0.0,
+            0.0,
 
 e.entryTime
 
@@ -339,6 +340,8 @@ ELSE 0 END
 ),0),
 
 0.0,
+
+
 
 NULL
 
